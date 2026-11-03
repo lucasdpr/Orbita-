@@ -330,3 +330,12 @@ footer{border-top:1px solid var(--line);background:rgba(5,3,12,.6);backdrop-filt
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   .reveal{opacity:1;transform:none}
 }
+
+/* ---------- staff ---------- */
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.staff-card{text-align:center;padding:30px 20px;transition:transform .35s var(--ease)}
+.staff-card:hover{transform:translateY(-8px)}
+.avatar{display:grid;place-items:center;width:76px;height:76px;margin:0 auto 14px;border-radius:50%;font:700 1.9rem 'Silkscreen',monospace;color:#fff;
+  background:linear-gradient(140deg,hsl(var(--h) 85% 62%),hsl(calc(var(--h) + 50) 80% 45%));box-shadow:0 0 34px -6px hsl(var(--h) 85% 60%),inset 0 1px 0 rgba(255,255,255,.35)}
+.staff-card h3{font-size:1.1rem}
+.staff-card small{color:var(--cyan);font:600 .72rem 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
