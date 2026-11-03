@@ -13,7 +13,8 @@ window.ORBITA = {
   past: [
     { title: "Halloween", emoji: "🎃", tag: "Temático", desc: "Evento de Halloween do servidor, com canal próprio (#halloween-evento)." },
     { title: "Minecraft", emoji: "⛏️", tag: "Jogos", desc: "Evento de Minecraft com a comunidade." },
-    { title: "Mudae", emoji: "🎲", tag: "Mudae", desc: "Evento de Mudae com a comunidade." }
+    { title: "Mudae", emoji: "🎲", tag: "Mudae", desc: "Evento de Mudae com a comunidade." },
+    { title: "Copa do Mundo", emoji: "⚽", tag: "Esportes", desc: "Evento da Copa do Mundo com a comunidade." }
   ],
 
   // Hall da Fama (exemplo — troque pelos reais)
