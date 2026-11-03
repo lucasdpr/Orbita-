@@ -221,7 +221,7 @@
       return `<article class="card glow ev reveal in ${ms <= 0 ? 'past' : ''}"><span class="tag">${esc(e.tag)}</span><h3>${esc(e.title)}</h3><div class="date">${esc(fmt.format(t))}</div><p>${esc(e.desc)}</p><div class="count">${countdown(ms)}</div></article>`;
     }).join('') : '<div class="events-empty"><span class="ico">🔭</span><div><b>Nenhum evento agendado agora</b>Os próximos são anunciados no <code>#eventos</code> do Discord.</div></div>';
   }
-  $('#pastEvents').innerHTML = [...(D.past || [])].sort((x, y) => (x.sort || '9999').localeCompare(y.sort || '9999')).map(e => `<article class="card glow ev done reveal in"><span class="tag">${esc(e.tag)}</span><div class="ev-ico">${esc(e.emoji)}</div><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><div class="count">✓ ${esc(e.when || "Data a confirmar")}</div></article>`).join('');
+  $('#pastEvents').innerHTML = [...(D.past || [])].sort((x, y) => (x.sort || '9999').localeCompare(y.sort || '9999')).map(e => `<article class="card glow ev done reveal in"><span class="tag">${esc(e.tag)}</span><div class="ev-ico">${esc(e.emoji)}</div><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p>${e.winner ? `<div class="winner"><span class="trophy">🏆</span><div><small>Vencedor</small><b>${esc(e.winner)}</b></div></div>` : ''}<div class="count">✓ ${esc(e.when || "Data a confirmar")}</div></article>`).join('');
   fBox.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; renderEvents(); } });
   renderEvents(); setInterval(renderEvents, 60000);
 
