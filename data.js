@@ -18,10 +18,13 @@ window.ORBITA = {
     { title: "Mudae", emoji: "🎲", tag: "Mudae", sort: "2026-09-15", when: "Set/2026", desc: "Evento de Mudae com a comunidade." }
   ],
 
+  // Equipe de staff (ordem em que aparece no site)
+  staff: ["Elcafezin", "Viktor", "Stan", "Dogigma"],
+
   // Hall da Fama (exemplo — troque pelos reais)
   hall: [
     { name: "Soninho", role: "Fundador", emoji: "👽" },
-    { name: "Henri", role: "Staff", emoji: "🛰️" },
+    { name: "Henri", role: "GOAT", emoji: "🐐" },
     { name: "Fim de festa", role: "Desenvolvedor", emoji: "💻" }
   ]
 };

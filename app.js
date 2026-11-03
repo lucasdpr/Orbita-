@@ -245,6 +245,10 @@
 
   // ---------- hall da fama ----------
   $('#hallList').innerHTML = D.hall.map(h => `<div class="card"><div class="em">${esc(h.emoji)}</div><h3>${esc(h.name)}</h3><small>${esc(h.role)}</small></div>`).join('');
+  // ---------- staff ----------
+  $('#staffList').innerHTML = (D.staff || []).map((n, i) => `<div class="card glow staff-card"><span class="avatar" style="--h:${(i * 67 + 250) % 360}">${esc(n.charAt(0).toUpperCase())}</span><h3>${esc(n)}</h3><small>Staff</small></div>`).join('');
+  $$('.staff-card').forEach(el => el.classList.add('reveal'));
+
   observe();
 
   // ---------- brilho que segue o mouse nos cards ----------
