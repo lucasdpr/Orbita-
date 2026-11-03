@@ -349,7 +349,7 @@ footer{border-top:1px solid var(--line);background:rgba(5,3,12,.6);backdrop-filt
 .ev.done:has(.winner){border-color:rgba(255,210,79,.28)}
 
 /* ---------- sol realista (cta final) ---------- */
-.sun-real{position:relative;width:170px;height:170px;margin:30px auto 44px;isolation:isolate}
+.sun-real{position:relative;width:200px;height:200px;margin:30px auto 44px;isolation:isolate}
 .sun-real>*{position:absolute;pointer-events:none}
 .sun-halo{inset:-130%;z-index:-3;border-radius:50%;
   background:radial-gradient(circle,rgba(255,200,80,.5) 0,rgba(255,140,40,.28) 18%,rgba(255,90,30,.12) 34%,transparent 62%);animation:sunPulse 5s ease-in-out infinite}
@@ -364,3 +364,23 @@ footer{border-top:1px solid var(--line);background:rgba(5,3,12,.6);backdrop-filt
   box-shadow:0 0 30px 6px rgba(255,190,70,.7),0 0 90px 24px rgba(255,120,30,.45);animation:spin 240s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:480px){.sun-real{width:140px;height:140px}}
+
+/* ---------- sol webgl ---------- */
+.sun-gl{position:absolute;pointer-events:none;z-index:2}
+.sun-real .sun-gl{inset:-60%;width:220%;height:220%}
+.sun-real.gl .sun-disc,.sun-real.gl .sun-rays{display:none}
+.sun-real.gl .sun-halo{inset:-150%;opacity:.8}
+.sun.gl{background:none;box-shadow:none;animation:none}
+.sun.gl::after{display:none}
+.sun.gl .sun-gl{inset:-100%;width:300%;height:300%}
+
+/* ---------- astronauta 3d ---------- */
+.astro.gl{width:clamp(220px,27vw,360px);right:2%;bottom:3%}
+.astro.gl svg{display:none}
+.astro.gl .sun-gl{position:relative;inset:auto;width:100%;height:auto;aspect-ratio:1;display:block;z-index:2}
+.astro.gl::before{content:"";position:absolute;inset:6%;border-radius:50%;z-index:1;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,79,216,.38),rgba(139,92,255,.16) 45%,transparent 70%);filter:blur(14px)}
+@media(max-width:820px){
+  .hero{padding-top:260px}
+  .astro.gl{width:150px;margin-left:-75px;top:88px;bottom:auto;right:auto}
+}
