@@ -252,7 +252,42 @@
 
   <!-- CTA FINAL -->
   <section id="entrar" class="sec final">
-    <div class="planet p-pink small" aria-hidden="true"></div>
+    <div class="sun-real" aria-hidden="true">
+      <div class="sun-halo"></div>
+      <div class="sun-rays"></div>
+      <div class="sun-rays r2"></div>
+      <svg class="sun-disc" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="sunBody" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#fffdf0"/><stop offset=".3" stop-color="#ffe985"/>
+            <stop offset=".62" stop-color="#ffb327"/><stop offset=".88" stop-color="#f26a0c"/><stop offset="1" stop-color="#a83200"/>
+          </radialGradient>
+          <radialGradient id="sunLimb" cx="50%" cy="50%" r="50%">
+            <stop offset=".55" stop-color="#7a1a00" stop-opacity="0"/><stop offset=".9" stop-color="#8a2200" stop-opacity=".22"/><stop offset="1" stop-color="#5a1200" stop-opacity=".5"/>
+          </radialGradient>
+          <filter id="sunBright" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="4" seed="11"/>
+            <feColorMatrix values="0 0 0 0 1  0 0 0 0 .96  0 0 0 0 .62  0 0 0 2.4 -.95"/>
+          </filter>
+          <filter id="sunDark" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency=".07" numOctaves="3" seed="3"/>
+            <feColorMatrix values="0 0 0 0 .75  0 0 0 0 .22  0 0 0 0 0  0 0 0 2.2 -.95"/>
+          </filter>
+          <filter id="spotBlur"><feGaussianBlur stdDeviation="2.2"/></filter>
+          <clipPath id="sunClip"><circle cx="100" cy="100" r="100"/></clipPath>
+        </defs>
+        <circle cx="100" cy="100" r="100" fill="url(#sunBody)"/>
+        <g clip-path="url(#sunClip)">
+          <rect x="-20" y="-20" width="240" height="240" filter="url(#sunBright)" opacity=".85"/>
+          <rect x="-20" y="-20" width="240" height="240" filter="url(#sunDark)" opacity=".55"/>
+          <g filter="url(#spotBlur)" fill="#5a1400" opacity=".55">
+            <ellipse cx="128" cy="78" rx="7" ry="4.5"/><ellipse cx="137" cy="86" rx="3.5" ry="2.5"/>
+            <ellipse cx="68" cy="124" rx="5" ry="3.2"/>
+          </g>
+          <circle cx="100" cy="100" r="100" fill="url(#sunLimb)"/>
+        </g>
+      </svg>
+    </div>
     <h2>Pronto para <span class="grad">decolar</span>?</h2>
     <p class="sub">Todo mundo é bem-vindo. Respeito é a lei da gravidade por aqui.</p>
     <a class="btn big" data-invite href="#">🚀 Entrar no servidor</a>
