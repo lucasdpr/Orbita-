@@ -227,14 +227,11 @@
 
   // ---------- mapa de canais ----------
   const CATS = [
-    { n: 'Espaçoporto', d: 'Chegou agora? Comece por aqui.', c: [['🛑 armadilha', 'Verificação anti-bot'], ['👋 bem-vindos', 'Boas-vindas'], ['🛎️ apresentação', 'Conte quem você é']] },
     { n: 'Interação', d: 'Mostre sua vida, seus pets e sua arte.', c: [['📸 insta-selfies', 'Selfies'], ['🐶 insta-pets', 'Pets'], ['🎮 insta-gamer', 'Prints e jogatinas'], ['🌳 paisagem', 'Fotos de paisagens'], ['🎨 artes', 'Desenhos e criações']] },
     { n: 'Comunicação', d: 'O dia a dia da comunidade.', c: [['💬 bate-papo', 'Papo geral'], ['📷 mídia-geral', 'Imagens e vídeos'], ['🤓 nerdice', 'Assuntos nerds'], ['💩 shitposts', 'Caos controlado'], ['⚙️ comandos', 'Bots e comandos']] },
     { n: 'Joguinhos', d: 'Onde o Mudae acontece.', c: [['👑 lord', 'Jogo de bot'], ['🎲 mudae', 'Rolls e claims'], ['🎲 mudae-trade', 'Trocas de personagens']] },
     { n: 'Músicas', d: 'Trilha sonora da galáxia.', c: [['🎵 Música¹', 'Sala de voz'], ['📻 Rádio', 'Lofi 24/7'], ['🎵 Música²', 'Sala de voz']] },
-    { n: 'Prisma Alliance', d: 'Eventos, membros e memória do servidor.', c: [['⭐ membros', 'Membros'], ['📅 calendário', 'Agenda de eventos'], ['🏆 hall-da-fama', 'Destaques'], ['🪃 eventos-prisma', 'Eventos da aliança']] },
     { n: 'Premium', d: 'Vantagens para apoiadores e impulsionadores.', c: [['🛍️ cargos', 'Cargos'], ['👑 vip', 'Área VIP'], ['🚀 impulso', 'Boosters'], ['🎨 cores', 'Cores personalizadas']] },
-    { n: 'Parcerias', d: 'Conexões com outros servidores.', c: [['🤝 pedir-parceria', 'Solicite parceria'], ['🤝 parcerias', 'Servidores parceiros'], ['🔗 link-do-servidor', 'Convite oficial']] }
   ];
   const tabs = $('#tabs'), panel = $('#tabPanel');
   function showCat(i) {
