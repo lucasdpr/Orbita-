@@ -347,3 +347,20 @@ footer{border-top:1px solid var(--line);background:rgba(5,3,12,.6);backdrop-filt
 .winner small{display:block;font:600 .64rem 'JetBrains Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
 .winner b{font-size:1.05rem;letter-spacing:-.01em}
 .ev.done:has(.winner){border-color:rgba(255,210,79,.28)}
+
+/* ---------- sol realista (cta final) ---------- */
+.sun-real{position:relative;width:170px;height:170px;margin:30px auto 44px;isolation:isolate}
+.sun-real>*{position:absolute;pointer-events:none}
+.sun-halo{inset:-130%;z-index:-3;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,200,80,.5) 0,rgba(255,140,40,.28) 18%,rgba(255,90,30,.12) 34%,transparent 62%);animation:sunPulse 5s ease-in-out infinite}
+@keyframes sunPulse{50%{transform:scale(1.08);opacity:.8}}
+.sun-rays{inset:-55%;z-index:-2;border-radius:50%;opacity:.55;
+  background:repeating-conic-gradient(from 0deg,rgba(255,220,120,.9) 0 1.2deg,transparent 1.2deg 9deg);
+  -webkit-mask:radial-gradient(circle,transparent 30%,#000 36%,transparent 62%);mask:radial-gradient(circle,transparent 30%,#000 36%,transparent 62%);
+  filter:blur(1.2px);animation:spin 140s linear infinite}
+.sun-rays.r2{inset:-75%;opacity:.3;background:repeating-conic-gradient(from 4deg,rgba(255,170,70,.9) 0 .8deg,transparent .8deg 13deg);
+  -webkit-mask:radial-gradient(circle,transparent 24%,#000 30%,transparent 58%);mask:radial-gradient(circle,transparent 24%,#000 30%,transparent 58%);animation:spin 200s linear infinite reverse}
+.sun-disc{inset:0;width:100%;height:100%;z-index:1;border-radius:50%;
+  box-shadow:0 0 30px 6px rgba(255,190,70,.7),0 0 90px 24px rgba(255,120,30,.45);animation:spin 240s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:480px){.sun-real{width:140px;height:140px}}
