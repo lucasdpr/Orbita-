@@ -186,8 +186,9 @@
     evBox.innerHTML = list.length ? list.map(e => {
       const t = new Date(e.date), ms = t - now;
       return `<article class="card ev reveal in ${ms <= 0 ? 'past' : ''}"><span class="tag">${esc(e.tag)}</span><h3>${esc(e.title)}</h3><div class="date">${esc(fmt.format(t))}</div><p>${esc(e.desc)}</p><div class="count">${countdown(ms)}</div></article>`;
-    }).join('') : '<p class="muted">Nenhum evento nessa categoria.</p>';
+    }).join('') : '<p class="muted">Nenhum evento agendado no momento. Fique de olho no <code>#eventos</code> no Discord! 🚀</p>';
   }
+  $('#pastEvents').innerHTML = (D.past || []).map(e => `<article class="card ev reveal in"><span class="tag">${esc(e.tag)}</span><h3>${esc(e.emoji)} ${esc(e.title)}</h3><p>${esc(e.desc)}</p><div class="count">✅ Já rolou</div></article>`).join('');
   fBox.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; renderEvents(); } });
   renderEvents(); setInterval(renderEvents, 60000);
 

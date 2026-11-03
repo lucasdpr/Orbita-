@@ -6,12 +6,14 @@ window.ORBITA = {
   members: 1300,
   online: 128,
 
-  // Eventos: date no formato AAAA-MM-DDTHH:MM (horário de Brasília). Substitua pelos reais.
-  events: [
-    { title: "Noite de Rolls do Mudae", date: "2026-11-07T21:00", tag: "Mudae", desc: "Reset de rolls em grupo: todo mundo rola junto na call e reage ao vivo." },
-    { title: "Cine Órbita", date: "2026-11-14T20:00", tag: "Call", desc: "Filme ou anime votado pela comunidade, com compartilhamento de tela." },
-    { title: "Torneio Roblox / Minecraft", date: "2026-11-21T19:00", tag: "Jogos", desc: "Times sorteados, prêmio de cargo exclusivo no Hall da Fama." },
-    { title: "Troca de Waifus & Husbandos", date: "2026-11-28T21:00", tag: "Mudae", desc: "Feira de trocas no #mudae-trade com mediação da staff." }
+  // Próximos eventos. date: AAAA-MM-DDTHH:MM (horário de Brasília). Deixe [] se não houver nenhum agendado.
+  events: [],
+
+  // Eventos que já aconteceram (sem data por enquanto; adicione "when": "out/2026" e detalhes se quiser).
+  past: [
+    { title: "Halloween", emoji: "🎃", tag: "Temático", desc: "Evento de Halloween do servidor, com canal próprio (#halloween-evento)." },
+    { title: "Minecraft", emoji: "⛏️", tag: "Jogos", desc: "Evento de Minecraft com a comunidade." },
+    { title: "Mudae", emoji: "🎲", tag: "Mudae", desc: "Evento de Mudae com a comunidade." }
   ],
 
   // Hall da Fama (exemplo — troque pelos reais)
