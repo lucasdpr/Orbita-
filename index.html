@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Órbita | LGBT+ Hangout</title>
+<meta name="description" content="Órbita: comunidade LGBT+ no Discord. Hangout, calls, Mudae, eventos, Roblox, Minecraft e muito mais.">
+<meta name="theme-color" content="#0a0614">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪐</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+<div class="nebula" aria-hidden="true"></div>
+<div class="cursor-glow" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <a href="#topo" class="brand">Órbita</a>
+  <button class="burger" aria-label="Menu" aria-expanded="false">☰</button>
+  <nav id="menu">
+    <a href="#sistema">Sistema Solar</a>
+    <a href="#mudae">Mudae</a>
+    <a href="#eventos">Eventos</a>
+    <a href="#canais">Canais</a>
+    <a href="#hall">Hall da Fama</a>
+    <a class="btn small" data-invite href="#">Entrar</a>
+  </nav>
+</header>
+
+<main id="topo">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="planet p-big" data-depth="0.15" aria-hidden="true"><i class="ring"></i></div>
+    <div class="planet p-pink" data-depth="0.35" aria-hidden="true"></div>
+    <div class="planet p-moon" data-depth="0.5" aria-hidden="true"></div>
+    <div class="astro" data-depth="0.25" aria-hidden="true">🧑‍🚀<span>🐄</span></div>
+
+    <div class="hero-inner">
+      <p class="eyebrow">LGBT+ · Hangout · Comunidade · Furry · Femboy</p>
+      <h1 class="logo" data-text="Órbita">Órbita</h1>
+      <p class="lead">Existe muita coisa fria e vazia por aí, mas a Órbita foi criada para quebrar essa regra. Um pequeno ecossistema LGBT+ movido por gente real, conversa sem filtro e um universo fofo e meio caótico.</p>
+      <div class="cta">
+        <a class="btn" data-invite href="#">🚀 Entrar na Órbita</a>
+        <a class="btn ghost" href="#mudae">🎲 Jogar Mudae</a>
+      </div>
+      <ul class="stats">
+        <li><b data-count="1300">0</b><span>membros</span></li>
+        <li><b data-count="128">0</b><span>online agora*</span></li>
+        <li><b>24/7</b><span>calls abertas</span></li>
+      </ul>
+      <div class="tags"><span>❤️ LGBT+</span><span>💛 Diversidade</span><span>💚 Inclusivo</span><span>💙 Orgulho</span></div>
+    </div>
+    <a href="#sistema" class="scroll" aria-label="Rolar">↓</a>
+  </section>
+
+  <!-- SISTEMA SOLAR -->
+  <section id="sistema" class="sec">
+    <h2>Sistema Solar</h2>
+    <p class="sub">Nossas calls de voz são planetas. Passe o mouse num planeta e clique para saber mais.</p>
+    <div class="solar" id="solar">
+      <div class="sun" title="Órbita"><span>☀️</span></div>
+    </div>
+    <div class="solar-info" id="solarInfo" aria-live="polite">Clique em um planeta 🪐</div>
+    <div class="moons">
+      <span>🌑 lua nova</span><span>🌒 lua minguante</span><span>🌓 lua crescente</span><span>🌕 lua cheia</span>
+      <em>Salas menores (até 2 pessoas) para papo reservado. Cada planeta comporta até 10.</em>
+    </div>
+  </section>
+
+  <!-- MUDAE -->
+  <section id="mudae" class="sec">
+    <h2>Mudae 🎲</h2>
+    <p class="sub">A gente joga MUITO. Role, case, troque e dispute personagens nos canais <code>#mudae</code> e <code>#mudae-trade</code>.</p>
+
+    <div class="mudae-grid">
+      <div class="gacha card">
+        <h3>Simulador de Roll</h3>
+        <p class="muted">Diversão local: personagens fictícios do cosmos. (Não usa o bot de verdade.)</p>
+        <div class="rolls-left">Rolls restantes: <b id="rollsLeft">10</b>/10</div>
+        <div class="gacha-stage" id="stage">
+          <div class="placeholder">✨<br>Role para invocar</div>
+        </div>
+        <div class="gacha-actions">
+          <button class="btn" id="rollBtn">🎲 Rolar</button>
+          <button class="btn ghost" id="claimBtn" disabled>💍 Casar (claim)</button>
+          <button class="btn ghost" id="resetBtn">🔄 Reset</button>
+        </div>
+        <div class="harem">
+          <h4>Seu harém <span id="haremCount">0</span></h4>
+          <div id="harem" class="harem-list"></div>
+        </div>
+      </div>
+
+      <div class="card cmds">
+        <h3>Comandos essenciais</h3>
+        <p class="muted">Clique para copiar.</p>
+        <ul class="cmd-list">
+          <li><button data-copy="$w"><code>$w</code><span>Rolar waifu (<code>$wa</code>/<code>$wg</code> variações; <code>$h</code> para husbando)</span></button></li>
+          <li><button data-copy="$tu"><code>$tu</code><span>Ver seus rolls, claim e cooldowns</span></button></li>
+          <li><button data-copy="$daily"><code>$daily</code><span>Rolls extras diários</span></button></li>
+          <li><button data-copy="$dk"><code>$dk</code><span>Coletar kakera diário</span></button></li>
+          <li><button data-copy="$mm"><code>$mm</code><span>Seu harém (market/lista)</span></button></li>
+          <li><button data-copy="$im nome"><code>$im nome</code><span>Informações de um personagem</span></button></li>
+          <li><button data-copy="$wl"><code>$wl</code><span>Sua wishlist</span></button></li>
+          <li><button data-copy="$divorce"><code>$divorce</code><span>Soltar personagem (vira kakera)</span></button></li>
+        </ul>
+        <p class="note">Comandos podem mudar conforme a configuração do bot do servidor. Confirme com <code>$help</code> no canal.</p>
+        <h3>Regras de convivência no Mudae</h3>
+        <ul class="bullets">
+          <li>Rolls só nos canais de Mudae, sem flood no bate-papo.</li>
+          <li>Trocas combinadas no <code>#mudae-trade</code>, com prints.</li>
+          <li>Respeite o claim alheio: sem “roubar” personagem que outro rolou.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EVENTOS -->
+  <section id="eventos" class="sec">
+    <h2>Eventos 🎉</h2>
+    <p class="sub">Próximos eventos. Veja o canal <code>#eventos</code> e o <code>#calendário</code> no servidor para confirmações.</p>
+    <div class="filters" id="eventFilters"></div>
+    <div class="events" id="events"></div>
+  </section>
+
+  <!-- CANAIS -->
+  <section id="canais" class="sec">
+    <h2>Mapa da Galáxia 🗺️</h2>
+    <p class="sub">Um tour pelas categorias do servidor.</p>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <div class="card tab-panel" id="tabPanel"></div>
+  </section>
+
+  <!-- HALL -->
+  <section id="hall" class="sec">
+    <h2>Hall da Fama 🏆</h2>
+    <div class="hall" id="hallList"></div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section id="entrar" class="sec final">
+    <div class="planet p-pink small" aria-hidden="true"></div>
+    <h2>Pronto para decolar?</h2>
+    <p class="sub">Todo mundo é bem-vindo. Respeito é a lei da gravidade por aqui.</p>
+    <a class="btn big" data-invite href="#">🚀 Entrar no servidor</a>
+    <div class="staff-box">
+      <h3>Quer ajudar a manter a Órbita?</h3>
+      <p>A staff representa o servidor e ajuda a manter um ambiente seguro, organizado e acolhedor. Procure o canal <code>#recrutamento-staff</code> no Discord.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Órbita · Comunidade LGBT+ · Feito com 💜 por membros. Projeto de fã, não afiliado ao Discord nem ao Mudae. <small>*números ilustrativos; atualize em <code>data.js</code>.</small></p>
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
