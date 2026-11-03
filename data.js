@@ -15,7 +15,7 @@ window.ORBITA = {
     { title: "Dia dos Namorados", emoji: "💘", tag: "Temático", sort: "2026-06-12", when: "Jun/2026", desc: "Evento de Dia dos Namorados no servidor." },
     { title: "Halloween", emoji: "🎃", tag: "Temático", sort: "2026-10-31", when: "Out/2026", desc: "Evento de Halloween do servidor, com canal próprio (#halloween-evento)." },
     { title: "Minecraft", emoji: "⛏️", tag: "Jogos", sort: "2026-10-31T12", when: "Sáb, 31/out/2026", desc: "Evento de Minecraft com a comunidade." },
-    { title: "Mudae", emoji: "🎲", tag: "Mudae", sort: "2026-10-30", when: "Antes do Halloween", desc: "Evento de Mudae com a comunidade." }
+    { title: "Mudae", emoji: "🎲", tag: "Mudae", sort: "2026-09-15", when: "Set/2026", desc: "Evento de Mudae com a comunidade." }
   ],
 
   // Hall da Fama (exemplo — troque pelos reais)
