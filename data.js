@@ -4,7 +4,6 @@
 window.ORBITA = {
   invite: "https://discord.gg/aD2ArYSsm4",
   members: 1300,
-  online: 128,
 
   // Próximos eventos. date: AAAA-MM-DDTHH:MM (horário de Brasília). Deixe [] se não houver nenhum agendado.
   events: [],
@@ -22,6 +21,8 @@ window.ORBITA = {
   // Hall da Fama (exemplo — troque pelos reais)
   hall: [
     { name: "Soninho", role: "Fundador", emoji: "👽" },
-    { name: "Henri", role: "Staff", emoji: "🛰️" }
+    { name: "Vide", role: "Vice-dono", emoji: "👑" },
+    { name: "Henri", role: "Staff", emoji: "🛰️" },
+    { name: "Fim de festa", role: "Desenvolvedor", emoji: "💻" }
   ]
 };
