@@ -2,8 +2,7 @@
 //  ÓRBITA — configuração editável. Mexa só aqui para atualizar o site.
 // ============================================================
 window.ORBITA = {
-  // TROQUE pelo link real de convite do Discord (ex.: "https://discord.gg/xxxxxx")
-  invite: "#entrar",
+  invite: "https://discord.gg/aD2ArYSsm4",
   members: 1300,
   online: 128,
 

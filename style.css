@@ -76,6 +76,14 @@ a{color:inherit;text-decoration:none}
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s}
 .reveal.in{opacity:1;transform:none}
 
+/* FEATURES */
+.features{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.feat{padding:18px;transition:transform .25s,border-color .25s}
+.feat:hover{transform:translateY(-6px);border-color:var(--pink)}
+.feat span{font-size:1.8rem}
+.feat h3{font-size:1rem;margin:6px 0 2px}
+.feat p{font-size:.85rem;color:var(--muted)}
+
 /* SOLAR */
 .solar{position:relative;overflow:clip;width:min(100%,640px);aspect-ratio:1;margin:0 auto}
 .sun{position:absolute;left:50%;top:50%;width:16%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;display:grid;place-items:center;font-size:2.4rem;
