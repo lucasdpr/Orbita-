@@ -21,7 +21,6 @@ window.ORBITA = {
   // Hall da Fama (exemplo — troque pelos reais)
   hall: [
     { name: "Soninho", role: "Fundador", emoji: "👽" },
-    { name: "Vide", role: "Vice-dono", emoji: "👑" },
     { name: "Henri", role: "Staff", emoji: "🛰️" },
     { name: "Fim de festa", role: "Desenvolvedor", emoji: "💻" }
   ]
