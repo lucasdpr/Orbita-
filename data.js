@@ -9,12 +9,14 @@ window.ORBITA = {
   // Próximos eventos. date: AAAA-MM-DDTHH:MM (horário de Brasília). Deixe [] se não houver nenhum agendado.
   events: [],
 
-  // Eventos que já aconteceram (sem data por enquanto; adicione "when": "out/2026" e detalhes se quiser).
+  // Eventos que já aconteceram. "sort" (AAAA-MM-DD) define a ordem; "when" é o texto mostrado.
+  // Sem "sort" o evento vai para o fim da lista, marcado como "data a confirmar".
   past: [
-    { title: "Halloween", emoji: "🎃", tag: "Temático", desc: "Evento de Halloween do servidor, com canal próprio (#halloween-evento)." },
+    { title: "Copa do Mundo", emoji: "⚽", tag: "Esportes", sort: "2026-06-11", when: "Jun/2026", desc: "Evento da Copa do Mundo com a comunidade." },
+    { title: "Dia dos Namorados", emoji: "💘", tag: "Temático", sort: "2026-06-12", when: "Jun/2026", desc: "Evento de Dia dos Namorados no servidor." },
+    { title: "Halloween", emoji: "🎃", tag: "Temático", sort: "2026-10-31", when: "Out/2026", desc: "Evento de Halloween do servidor, com canal próprio (#halloween-evento)." },
     { title: "Minecraft", emoji: "⛏️", tag: "Jogos", desc: "Evento de Minecraft com a comunidade." },
-    { title: "Mudae", emoji: "🎲", tag: "Mudae", desc: "Evento de Mudae com a comunidade." },
-    { title: "Copa do Mundo", emoji: "⚽", tag: "Esportes", desc: "Evento da Copa do Mundo com a comunidade." }
+    { title: "Mudae", emoji: "🎲", tag: "Mudae", desc: "Evento de Mudae com a comunidade." }
   ],
 
   // Hall da Fama (exemplo — troque pelos reais)
