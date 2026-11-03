@@ -83,20 +83,53 @@
     { n: 'Urano', c: '#7fe8e8', s: 26, d: 57, info: 'Papo mais esquisito, às vezes até com tema.' },
     { n: 'Netuno', c: '#4f6dff', s: 26, d: 64, info: 'Última fronteira. Silêncio e sossego.' }
   ];
-  const solar = $('#solar'), info = $('#solarInfo');
-  PLANETS.forEach((p, i) => {
+  // Órbitas elípticas "inclinadas": posição calculada por frame para ter profundidade real
+  // (planetas passam atrás do Sol e encolhem quando estão longe).
+  const TILT = 0.36;
+  const solar = $('#solar'), info = $('#solarInfo'), list = $('#planetList');
+  let selected = -1, hovering = false;
+  const bodies = PLANETS.map((p, i) => {
     const o = document.createElement('div'); o.className = 'orbit';
-    o.style.cssText = `width:${p.d * 1.5}%;height:${p.d * 1.5}%;animation-duration:${22 + i * 11}s;animation-delay:${-i * 6}s`;
-    if (reduce) o.style.animation = 'none';
-    const b = document.createElement('button'); b.className = 'pl'; b.setAttribute('aria-label', p.n);
-    b.style.cssText = `width:${p.s}px;height:${p.s}px;background:radial-gradient(circle at 32% 30%,#fff8,${p.c} 55%);color:${p.c}`;
-    if (p.n === 'Saturno') b.style.boxShadow += ',0 0 0 5px rgba(255,217,138,.25)';
-    b.addEventListener('click', () => {
-      $$('.pl.active', solar).forEach(x => x.classList.remove('active')); b.classList.add('active');
-      info.innerHTML = `<b>${esc(p.n)}</b><br>${esc(p.info)}<br><small class="muted">🔊 Sala de voz · até 10 pessoas</small>`;
-    });
-    o.appendChild(b); solar.appendChild(o);
+    o.style.width = `${p.d * 1.36}%`; o.style.height = `${p.d * 1.36 * TILT * 1.55}%`;
+    solar.appendChild(o);
+    const b = document.createElement('button');
+    b.className = 'pl' + (p.n === 'Saturno' ? ' ringed' : '') + (p.n === 'Júpiter' ? ' banded' : '');
+    b.setAttribute('aria-label', p.n);
+    b.style.setProperty('--c', p.c); b.style.setProperty('--s', p.s * 1.25 + 'px');
+    b.innerHTML = `<i></i><span class="pl-name">${esc(p.n)}</span>`;
+    b.addEventListener('click', () => select(i));
+    solar.appendChild(b);
+    const li = document.createElement('li');
+    li.innerHTML = `<button style="--c:${p.c}"><i></i>${esc(p.n)}<small>0${i + 1}</small></button>`;
+    li.firstChild.addEventListener('click', () => select(i));
+    list.appendChild(li);
+    return { p, b, li, a: i * 2.1 + 0.6, v: 0.32 / (1 + i * 0.55) };
   });
+  function select(i) {
+    selected = i;
+    bodies.forEach((x, j) => { x.b.classList.toggle('active', i === j); x.li.classList.toggle('on', i === j); });
+    const p = PLANETS[i];
+    info.style.setProperty('--c', p.c);
+    info.innerHTML = `<span class="si-label">Destino 0${i + 1} · Sala de voz</span><h3>${esc(p.n)}</h3><p>${esc(p.info)}</p><div class="si-meta"><span>🔊 até 10 pessoas</span><span>🛰️ órbita ${i + 1}</span></div>`;
+  }
+  solar.addEventListener('pointerenter', () => hovering = true);
+  solar.addEventListener('pointerleave', () => hovering = false);
+  let last = performance.now();
+  function orbit(t) {
+    const dt = Math.min((t - last) / 1000, 0.1); last = t;
+    const w = solar.clientWidth;
+    for (const x of bodies) {
+      if (!reduce && !hovering) x.a += x.v * dt;
+      const R = w * x.p.d * 0.68 / 100, s = Math.sin(x.a);
+      const depth = (s + 1) / 2; // 0 = fundo, 1 = frente
+      x.b.style.transform = `translate(${Math.cos(x.a) * R}px, ${s * R * TILT}px) translate(-50%,-50%) scale(${0.7 + depth * 0.45})`;
+      x.b.style.zIndex = s > 0 ? 20 + Math.round(depth * 10) : 5 + Math.round(depth * 4);
+      x.b.style.filter = `brightness(${0.6 + depth * 0.55})`;
+    }
+    if (!reduce) requestAnimationFrame(orbit);
+  }
+  requestAnimationFrame(orbit);
+  addEventListener('resize', () => { if (reduce) orbit(performance.now()); });
 
   // ---------- Mudae: simulador ----------
   const POOL = [
@@ -180,15 +213,15 @@
   }
   function renderEvents() {
     const tags = ['Todos', ...new Set(D.events.map(e => e.tag))];
-    fBox.innerHTML = tags.map(t => `<button class="chip ${t === filter ? 'on' : ''}" data-f="${esc(t)}">${esc(t)}</button>`).join('');
+    fBox.innerHTML = D.events.length < 2 ? '' : tags.map(t => `<button class="chip ${t === filter ? 'on' : ''}" data-f="${esc(t)}">${esc(t)}</button>`).join('');
     const now = Date.now();
     const list = D.events.filter(e => filter === 'Todos' || e.tag === filter).sort((a, b) => new Date(a.date) - new Date(b.date));
     evBox.innerHTML = list.length ? list.map(e => {
       const t = new Date(e.date), ms = t - now;
-      return `<article class="card ev reveal in ${ms <= 0 ? 'past' : ''}"><span class="tag">${esc(e.tag)}</span><h3>${esc(e.title)}</h3><div class="date">${esc(fmt.format(t))}</div><p>${esc(e.desc)}</p><div class="count">${countdown(ms)}</div></article>`;
-    }).join('') : '<p class="muted">Nenhum evento agendado no momento. Fique de olho no <code>#eventos</code> no Discord! 🚀</p>';
+      return `<article class="card glow ev reveal in ${ms <= 0 ? 'past' : ''}"><span class="tag">${esc(e.tag)}</span><h3>${esc(e.title)}</h3><div class="date">${esc(fmt.format(t))}</div><p>${esc(e.desc)}</p><div class="count">${countdown(ms)}</div></article>`;
+    }).join('') : '<div class="events-empty"><span class="ico">🔭</span><div><b>Nenhum evento agendado agora</b>Os próximos são anunciados no <code>#eventos</code> do Discord.</div></div>';
   }
-  $('#pastEvents').innerHTML = (D.past || []).map(e => `<article class="card ev reveal in"><span class="tag">${esc(e.tag)}</span><h3>${esc(e.emoji)} ${esc(e.title)}</h3><p>${esc(e.desc)}</p><div class="count">✅ Já rolou</div></article>`).join('');
+  $('#pastEvents').innerHTML = (D.past || []).map(e => `<article class="card glow ev done reveal in"><span class="tag">${esc(e.tag)}</span><div class="ev-ico">${esc(e.emoji)}</div><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><div class="count">✓ Já rolou</div></article>`).join('');
   fBox.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; renderEvents(); } });
   renderEvents(); setInterval(renderEvents, 60000);
 
@@ -216,4 +249,20 @@
   // ---------- hall da fama ----------
   $('#hallList').innerHTML = D.hall.map(h => `<div class="card"><div class="em">${esc(h.emoji)}</div><h3>${esc(h.name)}</h3><small>${esc(h.role)}</small></div>`).join('');
   observe();
+
+  // ---------- brilho que segue o mouse nos cards ----------
+  $$('.feat, .hall .card, .mudae-grid > .card').forEach(c => c.classList.add('glow'));
+  document.addEventListener('pointermove', e => {
+    const c = e.target.closest && e.target.closest('.card.glow'); if (!c) return;
+    const r = c.getBoundingClientRect();
+    c.style.setProperty('--mx', e.clientX - r.left + 'px'); c.style.setProperty('--my', e.clientY - r.top + 'px');
+  }, { passive: true });
+
+  // ---------- nav: fundo ao rolar + link da seção atual ----------
+  const nav = $('#nav'), links = $$('#menu a[href^="#"]');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 40), { passive: true });
+  const secIO = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  $$('main section[id]').forEach(s => secIO.observe(s));
 })();

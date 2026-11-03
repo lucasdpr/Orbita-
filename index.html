@@ -37,7 +37,84 @@
     <div class="planet p-big" data-depth="0.15" aria-hidden="true"><i class="ring"></i></div>
     <div class="planet p-pink" data-depth="0.35" aria-hidden="true"></div>
     <div class="planet p-moon" data-depth="0.5" aria-hidden="true"></div>
-    <div class="astro" data-depth="0.25" aria-hidden="true">🧑‍🚀<span>🐄</span></div>
+    <div class="planet p-earth" data-depth="0.6" aria-hidden="true"></div>
+    <div class="planet p-ice" data-depth="0.8" aria-hidden="true"></div>
+    <div class="comet" aria-hidden="true"></div>
+    <div class="astro" data-depth="0.25" aria-hidden="true">
+      <svg viewBox="0 0 220 260" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="visor" cx="35%" cy="30%" r="80%">
+            <stop offset="0" stop-color="#ffb3f0"/><stop offset=".35" stop-color="#8b5cff"/><stop offset=".75" stop-color="#2a1270"/><stop offset="1" stop-color="#0d0630"/>
+          </radialGradient>
+          <linearGradient id="suit" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9c2e8"/>
+          </linearGradient>
+          <linearGradient id="suitShade" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#6b5fa8" stop-opacity=".45"/>
+          </linearGradient>
+          <radialGradient id="glowA" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#ff4fd8" stop-opacity=".5"/><stop offset="1" stop-color="#ff4fd8" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- cabo de oxigênio -->
+        <path class="tether" d="M60 150 C 10 170, -10 230, 30 258" fill="none" stroke="#c9c2e8" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
+        <circle cx="110" cy="120" r="110" fill="url(#glowA)"/>
+        <!-- mochila -->
+        <rect x="46" y="110" width="128" height="96" rx="26" fill="#a99fd4"/>
+        <rect x="56" y="122" width="16" height="34" rx="6" fill="#58ff3c" opacity=".85"/>
+        <!-- corpo -->
+        <path d="M66 140 Q110 120 154 140 L160 214 Q110 232 60 214 Z" fill="url(#suit)"/>
+        <path d="M66 140 Q110 120 154 140 L160 214 Q110 232 60 214 Z" fill="url(#suitShade)"/>
+        <rect x="92" y="160" width="36" height="24" rx="6" fill="#2a1a55"/>
+        <circle cx="101" cy="168" r="3.5" fill="#ff4fd8"/><circle cx="111" cy="168" r="3.5" fill="#4fd8ff"/><circle cx="121" cy="168" r="3.5" fill="#ffd24f"/>
+        <rect x="98" y="176" width="24" height="3" rx="1.5" fill="#58ff3c"/>
+        <!-- pernas -->
+        <path d="M72 206 q-6 30 4 42 h22 q4 -18 2 -38 Z" fill="url(#suit)"/>
+        <path d="M148 206 q8 26 -2 40 h-22 q-4 -16 -2 -36 Z" fill="url(#suit)"/>
+        <rect x="74" y="238" width="26" height="12" rx="6" fill="#8b5cff"/>
+        <rect x="122" y="236" width="26" height="12" rx="6" fill="#8b5cff"/>
+        <!-- braço esquerdo acenando -->
+        <g class="wave">
+          <path d="M66 150 Q34 136 30 104" fill="none" stroke="url(#suit)" stroke-width="22" stroke-linecap="round"/>
+          <circle cx="30" cy="98" r="13" fill="#8b5cff"/>
+        </g>
+        <!-- vaquinha no colo -->
+        <!-- braço direito segurando a vaquinha (atrás dela) -->
+        <path d="M154 150 Q184 166 176 204" fill="none" stroke="url(#suit)" stroke-width="20" stroke-linecap="round"/>
+        <g class="cow">
+          <ellipse cx="150" cy="186" rx="30" ry="20" fill="#fff" stroke="#2a1a55" stroke-width="2.5"/>
+          <path d="M136 176 q8 -6 14 2 q-6 8 -14 -2Z M158 190 q10 -4 12 6 q-8 6 -12 -6Z" fill="#2a1a55"/>
+          <circle cx="174" cy="168" r="17" fill="#fff" stroke="#2a1a55" stroke-width="2.5"/>
+          <path d="M163 160 q-8 -10 -2 -14 M185 160 q8 -10 2 -14" stroke="#ffd24f" stroke-width="4" stroke-linecap="round" fill="none"/>
+          <ellipse cx="160" cy="156" rx="6" ry="3.5" fill="#2a1a55" transform="rotate(-25 160 156)"/>
+          <ellipse cx="174" cy="176" rx="11" ry="7.5" fill="#ffb3d1"/>
+          <circle cx="170" cy="176" r="1.8" fill="#8a2d5a"/><circle cx="178" cy="176" r="1.8" fill="#8a2d5a"/>
+          <circle cx="168" cy="164" r="2.6" fill="#2a1a55"/><circle cx="181" cy="164" r="2.6" fill="#2a1a55"/>
+          <circle cx="169" cy="163" r=".9" fill="#fff"/><circle cx="182" cy="163" r=".9" fill="#fff"/>
+        </g>
+        <circle cx="176" cy="206" r="11" fill="#8b5cff"/>
+        <!-- capacete -->
+        <circle cx="110" cy="82" r="62" fill="url(#suit)"/>
+        <circle cx="110" cy="82" r="62" fill="url(#suitShade)"/>
+        <circle cx="110" cy="84" r="47" fill="url(#visor)"/>
+        <!-- rosto verde atrás do visor -->
+        <g opacity=".9">
+          <path d="M80 78 q2 -32 32 -30 q28 2 28 30 q-8 -14 -16 -10 q-6 -10 -16 -4 q-10 -8 -18 4 q-6 -2 -10 10Z" fill="#58ff3c"/>
+          <ellipse cx="110" cy="92" rx="22" ry="20" fill="#7cd36b" opacity=".85"/>
+          <circle cx="101" cy="90" r="4" fill="#0d0630"/><circle cx="119" cy="90" r="4" fill="#0d0630"/>
+          <circle cx="102.4" cy="88.6" r="1.4" fill="#fff"/><circle cx="120.4" cy="88.6" r="1.4" fill="#fff"/>
+          <path d="M104 101 q6 5 12 0" stroke="#0d0630" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <circle cx="95" cy="99" r="3.5" fill="#ff7fd0" opacity=".6"/><circle cx="125" cy="99" r="3.5" fill="#ff7fd0" opacity=".6"/>
+        </g>
+        <!-- reflexos do visor -->
+        <path d="M78 64 q14 -24 42 -26" stroke="#fff" stroke-opacity=".7" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <circle cx="140" cy="108" r="4" fill="#fff" opacity=".55"/>
+        <circle cx="130" cy="58" r="1.6" fill="#fff"/><circle cx="92" cy="112" r="1.2" fill="#fff"/>
+        <!-- antena -->
+        <line x1="150" y1="34" x2="162" y2="12" stroke="#c9c2e8" stroke-width="4" stroke-linecap="round"/>
+        <circle class="beacon" cx="163" cy="10" r="6" fill="#ff4fd8"/>
+      </svg>
+    </div>
 
     <div class="hero-inner">
       <p class="eyebrow">LGBT+ · Hangout · Comunidade · Furry · Femboy</p>
@@ -49,29 +126,42 @@
       </div>
       <ul class="stats">
         <li><b data-count="1300">0</b><span>membros</span></li>
-        <li><b data-count="128">0</b><span>online agora*</span></li>
+        <li><b data-count="128">0</b><span>online</span></li>
         <li><b>24/7</b><span>calls abertas</span></li>
       </ul>
       <div class="tags"><span>❤️ LGBT+</span><span>💛 Diversidade</span><span>💚 Inclusivo</span><span>💙 Orgulho</span></div>
     </div>
-    <a href="#sistema" class="scroll" aria-label="Rolar">↓</a>
+    <a href="#sobre" class="scroll" aria-label="Rolar para baixo">↓</a>
   </section>
 
   <!-- SOBRE -->
   <section id="sobre" class="sec">
-    <h2>Por que a Órbita?</h2>
+    <p class="kicker">01 · A comunidade</p>
+    <h2>Por que a <span class="grad">Órbita</span>?</h2>
     <p class="sub">Aqui ninguém precisa fingir que se encaixa em um padrão: nossa órbita é feita de trajetórias tortas, cores vibrantes e muito acolhimento. Se você procurava um lugar seguro para fincar sua bandeira e ser 100% você, encontrou. 🐄🛸</p>
     <div class="features"><div class="card feat"><span>🛡️</span><h3>Equipe ativa</h3><p>Staff sempre presente.</p></div><div class="card feat"><span>💬</span><h3>Bate-papo</h3><p>Canais para interação.</p></div><div class="card feat"><span>🔊</span><h3>Calls dinâmicas</h3><p>Salas variadas de voz.</p></div><div class="card feat"><span>⭐</span><h3>Níveis</h3><p>Sistema de progressão.</p></div><div class="card feat"><span>🎧</span><h3>Música e lofi</h3><p>Bots e ambientes relax.</p></div><div class="card feat"><span>🧶</span><h3>Cargos e cores</h3><p>Exclusivos e personalizados.</p></div><div class="card feat"><span>🌺</span><h3>Acolhedor</h3><p>Ambiente para LGBT+.</p></div><div class="card feat"><span>💎</span><h3>Boost</h3><p>Benefícios para boosters.</p></div><div class="card feat"><span>💵</span><h3>VIP</h3><p>Cargos e benefícios.</p></div><div class="card feat"><span>🔞</span><h3>Sem NSFW</h3><p>Nenhum conteúdo adulto.</p></div><div class="card feat"><span>🎫</span><h3>Tickets</h3><p>Suporte disponível.</p></div><div class="card feat"><span>📅</span><h3>Eventos</h3><p>Cargos exclusivos.</p></div><div class="card feat"><span>⚜️</span><h3>Tag do servidor</h3><p>Mostre que é da Órbita.</p></div><div class="card feat"><span>💹</span><h3>Membros ativos</h3><p>Comunidade engajada.</p></div><div class="card feat"><span>📷</span><h3>Insta</h3><p>Vários canais de fotos.</p></div></div>
   </section>
 
   <!-- SISTEMA SOLAR -->
   <section id="sistema" class="sec">
-    <h2>Sistema Solar</h2>
+    <p class="kicker">02 · Calls de voz</p>
+    <h2>Sistema <span class="grad">Solar</span></h2>
     <p class="sub">Nossas calls de voz são planetas. Passe o mouse num planeta e clique para saber mais.</p>
-    <div class="solar" id="solar">
-      <div class="sun" title="Órbita"><span>☀️</span></div>
+    <div class="solar-wrap">
+      <div class="solar-stage">
+        <div class="solar" id="solar">
+          <div class="sun" title="Órbita"></div>
+        </div>
+      </div>
+      <aside class="solar-side">
+        <div class="solar-info card" id="solarInfo" aria-live="polite">
+          <span class="si-label">Painel de navegação</span>
+          <h3>Escolha um destino</h3>
+          <p>Clique em um planeta ou na lista abaixo para ver a sala.</p>
+        </div>
+        <ol class="planet-list" id="planetList"></ol>
+      </aside>
     </div>
-    <div class="solar-info" id="solarInfo" aria-live="polite">Clique em um planeta 🪐</div>
     <div class="moons">
       <span>🌑 lua nova</span><span>🌒 lua minguante</span><span>🌓 lua crescente</span><span>🌕 lua cheia</span>
       <em>Salas menores (até 2 pessoas) para papo reservado. Cada planeta comporta até 10.</em>
@@ -80,7 +170,8 @@
 
   <!-- MUDAE -->
   <section id="mudae" class="sec">
-    <h2>Mudae 🎲</h2>
+    <p class="kicker">03 · Joguinhos</p>
+    <h2>A gente vive no <span class="grad">Mudae</span></h2>
     <p class="sub">A gente joga MUITO. Role, case, troque e dispute personagens nos canais <code>#mudae</code> e <code>#mudae-trade</code>.</p>
 
     <div class="mudae-grid">
@@ -128,8 +219,9 @@
 
   <!-- EVENTOS -->
   <section id="eventos" class="sec">
-    <h2>Eventos 🎉</h2>
-    <p class="sub">Próximos eventos. Veja o canal <code>#eventos</code> e o <code>#calendário</code> no servidor para confirmações.</p>
+    <p class="kicker">04 · Agenda</p>
+    <h2><span class="grad">Eventos</span> da galáxia</h2>
+    <p class="sub">Veja o canal <code>#eventos</code> e o <code>#calendário</code> no servidor para confirmações.</p>
     <div class="filters" id="eventFilters"></div>
     <div class="events" id="events"></div>
     <h3 class="past-title">Já rolaram na Órbita</h3>
@@ -138,7 +230,8 @@
 
   <!-- CANAIS -->
   <section id="canais" class="sec">
-    <h2>Mapa da Galáxia 🗺️</h2>
+    <p class="kicker">05 · Canais</p>
+    <h2>Mapa da <span class="grad">Galáxia</span></h2>
     <p class="sub">Um tour pelas categorias do servidor.</p>
     <div class="tabs" id="tabs" role="tablist"></div>
     <div class="card tab-panel" id="tabPanel"></div>
@@ -146,25 +239,31 @@
 
   <!-- HALL -->
   <section id="hall" class="sec">
-    <h2>Hall da Fama 🏆</h2>
+    <p class="kicker">06 · Destaques</p>
+    <h2>Hall da <span class="grad">Fama</span></h2>
     <div class="hall" id="hallList"></div>
   </section>
 
   <!-- CTA FINAL -->
   <section id="entrar" class="sec final">
     <div class="planet p-pink small" aria-hidden="true"></div>
-    <h2>Pronto para decolar?</h2>
+    <h2>Pronto para <span class="grad">decolar</span>?</h2>
     <p class="sub">Todo mundo é bem-vindo. Respeito é a lei da gravidade por aqui.</p>
     <a class="btn big" data-invite href="#">🚀 Entrar no servidor</a>
-    <div class="staff-box">
-      <h3>Quer ajudar a manter a Órbita?</h3>
-      <p>A staff representa o servidor e ajuda a manter um ambiente seguro, organizado e acolhedor. Procure o canal <code>#recrutamento-staff</code> no Discord.</p>
+    <div class="staff-box card">
+      <span class="ico" aria-hidden="true">🛡️</span>
+      <div><h3>Quer ajudar a manter a Órbita?</h3>
+      <p>A staff representa o servidor e ajuda a manter um ambiente seguro, organizado e acolhedor. Procure o canal <code>#recrutamento-staff</code> no Discord.</p></div>
     </div>
   </section>
 </main>
 
 <footer>
-  <p>Órbita · Comunidade LGBT+ · Feito com 💜 por membros. Projeto de fã, não afiliado ao Discord nem ao Mudae. <small>*números ilustrativos; atualize em <code>data.js</code>.</small></p>
+  <div class="foot">
+    <a href="#topo" class="brand">Órbita</a>
+    <nav><a href="#sobre">Sobre</a><a href="#mudae">Mudae</a><a href="#eventos">Eventos</a><a data-invite href="#">Discord</a></nav>
+    <p>Comunidade LGBT+ · Feito com 💜 pelos membros · Sem NSFW<br><small>Projeto da comunidade, não afiliado ao Discord nem ao Mudae.</small></p>
+  </div>
 </footer>
 
 <script src="data.js"></script>
