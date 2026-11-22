@@ -409,3 +409,9 @@ footer{border-top:1px solid var(--line);background:rgba(5,3,12,.6);backdrop-filt
 .music-ctl button:hover{background:rgba(255,255,255,.14)}
 .music-ctl input[type=range]{flex:1;min-width:0;accent-color:var(--pink);height:4px}
 @media(max-width:480px){.music{left:10px;bottom:10px}.music-label{display:none}.music-btn{padding:12px 14px}}
+
+/* ---------- saudação do hero ---------- */
+.welcome{margin:-4px 0 20px;font:700 clamp(1.05rem,3.2vw,1.7rem)/1.2 'Silkscreen',monospace;letter-spacing:.18em;text-transform:uppercase}
+.welcome span{display:inline-block;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px rgba(139,92,255,.5))}
+.welcome::before,.welcome::after{content:"✦";color:var(--pink);margin:0 14px;font-size:.7em;vertical-align:middle;text-shadow:0 0 12px var(--pink)}
+@media(max-width:480px){.welcome{letter-spacing:.1em;margin-bottom:26px}.welcome::before,.welcome::after{margin:0 8px}}

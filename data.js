@@ -2,6 +2,8 @@
 //  ÓRBITA — configuração editável. Mexa só aqui para atualizar o site.
 // ============================================================
 window.ORBITA = {
+  // Saudação do topo (troque por "Bem-vindes à", "Bem-vinda à" etc. se preferir).
+  welcome: "Bem-vindo à",
   invite: "https://discord.gg/aD2ArYSsm4",
   members: 1300,
 
