@@ -18,6 +18,7 @@
       if (withSound && D.welcomeSound) {
         try { const au = new Audio(D.welcomeSound); au.volume = 0.9; const pr = au.play(); if (pr && pr.catch) pr.catch(() => { }); } catch (e) { }
       }
+      if (withSound && window.__orbitaMusic) window.__orbitaMusic.autostart();
       g.classList.add('leaving'); html.classList.add('entered');
       setTimeout(() => g.remove(), 800);
     }
@@ -602,7 +603,9 @@
     let volume = M.volume == null ? 35 : M.volume;
     try { const v = parseInt(localStorage.getItem('orbita-vol'), 10); if (v >= 0 && v <= 100) volume = v; } catch (e) { }
     vol.value = volume;
-    let player = null, ready = false, wantPlay = false, playing = false, resumeOnShow = false, loading = false;
+    let player = null, ready = false, wantPlay = false, playing = false, resumeOnShow = false, loading = false, apiReady = !!(window.YT && window.YT.Player), wantBuild = false;
+    const getPref = () => { try { return localStorage.getItem('orbita-music'); } catch (e) { return null; } };
+    const setPref = v => { try { localStorage.setItem('orbita-music', v); } catch (e) { } };
 
     function ui() {
       btn.classList.toggle('on', playing); btn.setAttribute('aria-expanded', !card.hidden);
@@ -624,21 +627,20 @@
         }
       });
     }
-    function loadApi() {
-      if (window.YT && window.YT.Player) { build(); return; }
-      if (loading) return; loading = true;
-      window.onYouTubeIframeAPIReady = build;
+    function ensureApi() {
+      if (apiReady || loading) return; loading = true;
+      window.onYouTubeIframeAPIReady = () => { apiReady = true; if (wantBuild && !player) build(); };
       const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; s.async = true;
-      s.onerror = () => { loading = false; card.hidden = true; ui(); toast('Não consegui carregar o player de música'); };
+      s.onerror = () => { loading = false; if (wantBuild) { card.hidden = true; ui(); toast('Não consegui carregar o player de música'); } };
       document.head.appendChild(s);
     }
     function open() {
-      card.hidden = false; wantPlay = true;
-      if (!player) loadApi(); else if (ready) player.playVideo();
+      card.hidden = false; wantPlay = true; setPref('on');
+      if (!player) { wantBuild = true; if (apiReady) build(); else ensureApi(); } else if (ready) player.playVideo();
       ui();
     }
     function close() {
-      wantPlay = false; playing = false; card.hidden = true;
+      wantPlay = false; playing = false; card.hidden = true; setPref('off');
       if (ready) player.pauseVideo(); ui();
     }
     btn.addEventListener('click', () => { if (card.hidden) open(); else close(); });
@@ -658,5 +660,15 @@
       else if (resumeOnShow) { resumeOnShow = false; player.playVideo(); }
     });
     ui();
+    // o botão "Entrar" da tela de boas-vindas chama isto: o clique libera o som no navegador
+    window.__orbitaMusic = {
+      autostart() {
+        if (getPref() === 'off' || !card.hidden) return;
+        open();
+        setTimeout(() => { if (!playing && !card.hidden) toast('Toque em ▶ para ouvir a música 🎵'); }, 4000);
+      }
+    };
+    const idle = window.requestIdleCallback || (f => setTimeout(f, 800));
+    idle(() => ensureApi(), { timeout: 1500 });
   })();
 })();
