@@ -434,3 +434,8 @@ html:not(.entered) body{overflow:hidden}
 .gate-skip{background:none;border:0;color:var(--muted);cursor:pointer;font-size:.9rem;text-decoration:underline;text-underline-offset:3px;padding:6px 10px}
 .gate-skip:hover{color:#fff}
 .gate-note{color:var(--dim);font-size:.78rem}
+
+@media(max-width:480px){
+  .music-card{width:232px}
+  .music-video,.music-video iframe{width:200px;height:200px}
+}
