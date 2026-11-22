@@ -570,4 +570,69 @@
   if (solarSun) createGL(solarSun, 3, SUN_FS);
   const astroBox = $('.astro');
   if (astroBox) createGL(astroBox, 1, ASTRO_FS);
+  // ---------- música de fundo (YouTube IFrame API, carregada só ao clicar) ----------
+  (function music() {
+    const M = D.music; if (!M || !M.youtube) { const box = $('#music'); if (box) box.remove(); return; }
+    const btn = $('#musicBtn'), card = $('#musicCard'), tg = $('#musicToggle'), vol = $('#musicVol'), cl = $('#musicClose');
+    $('#musicTitle').textContent = M.title || 'Música'; $('#musicCredit').textContent = M.credit || '';
+    let volume = M.volume == null ? 35 : M.volume;
+    try { const v = parseInt(localStorage.getItem('orbita-vol'), 10); if (v >= 0 && v <= 100) volume = v; } catch (e) { }
+    vol.value = volume;
+    let player = null, ready = false, wantPlay = false, playing = false, resumeOnShow = false, loading = false;
+
+    function ui() {
+      btn.classList.toggle('on', playing); btn.setAttribute('aria-expanded', !card.hidden);
+      tg.textContent = playing ? '⏸' : '▶'; tg.setAttribute('aria-label', playing ? 'Pausar' : 'Tocar');
+    }
+    function build() {
+      player = new YT.Player('ytPlayer', {
+        width: 240, height: 240, videoId: M.youtube, host: 'https://www.youtube-nocookie.com',
+        playerVars: { start: M.start || 0, end: M.end || 0, controls: 0, disablekb: 1, modestbranding: 1, playsinline: 1, rel: 0, iv_load_policy: 3, origin: location.origin },
+        events: {
+          onReady: () => { ready = true; player.setVolume(volume); if (wantPlay) player.playVideo(); },
+          onStateChange: e => {
+            if (e.data === 1) playing = true;
+            else if (e.data === 2 || e.data === -1 || e.data === 5) playing = false;
+            else if (e.data === 0) { player.seekTo(M.start || 0, true); player.playVideo(); return; }
+            ui();
+          },
+          onError: () => { playing = false; wantPlay = false; card.hidden = true; ui(); toast('Não foi possível tocar essa música agora 😕'); }
+        }
+      });
+    }
+    function loadApi() {
+      if (window.YT && window.YT.Player) { build(); return; }
+      if (loading) return; loading = true;
+      window.onYouTubeIframeAPIReady = build;
+      const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; s.async = true;
+      s.onerror = () => { loading = false; card.hidden = true; ui(); toast('Não consegui carregar o player de música'); };
+      document.head.appendChild(s);
+    }
+    function open() {
+      card.hidden = false; wantPlay = true;
+      if (!player) loadApi(); else if (ready) player.playVideo();
+      ui();
+    }
+    function close() {
+      wantPlay = false; playing = false; card.hidden = true;
+      if (ready) player.pauseVideo(); ui();
+    }
+    btn.addEventListener('click', () => { if (card.hidden) open(); else close(); });
+    cl.addEventListener('click', close);
+    tg.addEventListener('click', () => {
+      if (!ready) return;
+      if (playing) { wantPlay = false; player.pauseVideo(); } else { wantPlay = true; player.playVideo(); }
+    });
+    vol.addEventListener('input', () => {
+      volume = +vol.value; if (ready) player.setVolume(volume);
+      try { localStorage.setItem('orbita-vol', String(volume)); } catch (e) { }
+    });
+    // não toca em segundo plano: pausa com a aba oculta e retoma ao voltar
+    document.addEventListener('visibilitychange', () => {
+      if (!ready) return;
+      if (document.hidden) { resumeOnShow = playing; if (playing) player.pauseVideo(); }
+      else if (resumeOnShow) { resumeOnShow = false; player.playVideo(); }
+    });
+    ui();
+  })();
 })();
