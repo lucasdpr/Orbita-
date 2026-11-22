@@ -6,6 +6,9 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+  // ---------- saudação ----------
+  if (D.welcome) $('#welcomeText').textContent = D.welcome;
+
   // ---------- convite ----------
   $$('[data-invite]').forEach(a => { a.href = D.invite; if (/^https?:/.test(D.invite)) { a.target = '_blank'; a.rel = 'noopener'; } });
 
