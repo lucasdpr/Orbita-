@@ -6,6 +6,27 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+  // ---------- tela de boas-vindas (o clique libera o som no navegador) ----------
+  (function gate() {
+    const g = $('#gate'), html = document.documentElement;
+    if (!g) return;
+    if (html.classList.contains('entered')) { g.remove(); return; }
+    const btn = $('#gateBtn'), skip = $('#gateSkip');
+    function enter(withSound) {
+      if (html.classList.contains('entered')) return;
+      try { sessionStorage.setItem('orbita-in', '1'); } catch (e) { }
+      if (withSound && D.welcomeSound) {
+        try { const au = new Audio(D.welcomeSound); au.volume = 0.9; const pr = au.play(); if (pr && pr.catch) pr.catch(() => { }); } catch (e) { }
+      }
+      g.classList.add('leaving'); html.classList.add('entered');
+      setTimeout(() => g.remove(), 800);
+    }
+    btn.addEventListener('click', () => enter(true));
+    skip.addEventListener('click', () => enter(false));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') enter(false); });
+    btn.focus({ preventScroll: true });
+  })();
+
   // ---------- saudação ----------
   if (D.welcome) $('#welcomeText').textContent = D.welcome;
 

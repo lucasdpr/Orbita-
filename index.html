@@ -11,8 +11,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script>try{if(sessionStorage.getItem('orbita-in'))document.documentElement.classList.add('entered')}catch(e){}</script>
+<noscript><style>.gate{display:none!important}html:not(.entered) body{overflow:auto!important}</style></noscript>
 </head>
 <body>
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <div class="gate-inner">
+    <p class="gate-hello">✦ Bem-vindo à ✦</p>
+    <h2 class="gate-logo" id="gateTitle">Órbita</h2>
+    <p class="gate-sub">Comunidade LGBT+ · Hangout · Mudae · Eventos</p>
+    <button class="btn big gate-btn" id="gateBtn">🚀 Entrar na Órbita</button>
+    <button class="gate-skip" id="gateSkip">Entrar sem som</button>
+    <small class="gate-note">🔊 Ao entrar, toca um som de boas-vindas.</small>
+  </div>
+</div>
 <canvas id="stars" aria-hidden="true"></canvas>
 <div class="nebula" aria-hidden="true"></div>
 <div class="cursor-glow" aria-hidden="true"></div>

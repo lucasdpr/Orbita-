@@ -4,6 +4,8 @@
 window.ORBITA = {
   // Saudação do topo (troque por "Bem-vindes à", "Bem-vinda à" etc. se preferir).
   welcome: "Bem-vindo à",
+  // Som tocado quando a pessoa clica em "Entrar" na tela de boas-vindas (troque o arquivo em assets/ se quiser).
+  welcomeSound: "assets/bem-vindo.m4a",
   invite: "https://discord.gg/aD2ArYSsm4",
   members: 1300,
 
