@@ -225,19 +225,22 @@
   const evBox = $('#events'), fBox = $('#eventFilters');
   const fmt = new Intl.DateTimeFormat('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
   let filter = 'Todos';
+  let EVENTS = D.events;   // trocado pelos eventos do Discord quando a função do site responde
   function countdown(ms) {
     if (ms <= 0) return 'Já rolou';
     const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4);
     return d > 0 ? `em ${d}d ${h}h` : `em ${h}h ${m}min`;
   }
   function renderEvents() {
-    const tags = ['Todos', ...new Set(D.events.map(e => e.tag))];
-    fBox.innerHTML = D.events.length < 2 ? '' : tags.map(t => `<button class="chip ${t === filter ? 'on' : ''}" data-f="${esc(t)}">${esc(t)}</button>`).join('');
+    const tags = ['Todos', ...new Set(EVENTS.map(e => e.tag))];
+    fBox.innerHTML = EVENTS.length < 2 ? '' : tags.map(t => `<button class="chip ${t === filter ? 'on' : ''}" data-f="${esc(t)}">${esc(t)}</button>`).join('');
     const now = Date.now();
-    const list = D.events.filter(e => filter === 'Todos' || e.tag === filter).sort((a, b) => (a.date ? +new Date(a.date) : 8.64e15) - (b.date ? +new Date(b.date) : 8.64e15));
+    const list = EVENTS.filter(e => filter === 'Todos' || e.tag === filter).sort((a, b) => (a.date ? +new Date(a.date) : 8.64e15) - (b.date ? +new Date(b.date) : 8.64e15));
     evBox.innerHTML = list.length ? list.map(e => {
       const t = e.date ? new Date(e.date) : null, ms = t ? t - now : Infinity;
-      return `<article class="card glow ev reveal in ${t && ms <= 0 ? 'past' : ''}"><span class="tag">${esc(e.tag)}</span>${e.emoji ? `<div class="ev-ico">${esc(e.emoji)}</div>` : ''}<h3>${esc(e.title)}</h3><div class="date">${esc(t ? fmt.format(t) : (e.when || 'Em breve'))}</div><p>${esc(e.desc)}</p><div class="count">${t ? countdown(ms) : '⏳ Data a confirmar'}</div></article>`;
+      const desc = String(e.desc || ''), short = desc.length > 220 ? desc.slice(0, 217).trimEnd() + '…' : desc;
+      const extra = e.interested ? ` · ⭐ ${e.interested} interessad${e.interested === 1 ? 'o' : 'os'}` : '';
+      return `<article class="card glow ev reveal in ${t && ms <= 0 && !e.live ? 'past' : ''} ${e.live ? 'live' : ''}">${e.image ? `<img class="ev-cover" src="${esc(e.image)}" alt="" loading="lazy">` : ''}<span class="tag">${esc(e.tag)}</span>${e.emoji ? `<div class="ev-ico">${esc(e.emoji)}</div>` : ''}<h3>${esc(e.title)}</h3><div class="date">${esc(t ? fmt.format(t) : (e.when || 'Em breve'))}</div>${e.location ? `<div class="ev-loc">📍 ${esc(e.location)}</div>` : ''}<p>${esc(short)}</p><div class="count">${e.live ? '🔴 Acontecendo agora' : t ? countdown(ms) : '⏳ Data a confirmar'}${extra}</div>${e.url ? `<a class="ev-link" href="${esc(e.url)}" target="_blank" rel="noopener">Ver no Discord →</a>` : ''}</article>`;
     }).join('') : '<div class="events-empty"><span class="ico">🔭</span><div><b>Nenhum evento agendado agora</b>Os próximos são anunciados no <code>#eventos</code> do Discord.</div></div>';
   }
   $('#pastEvents').innerHTML = [...(D.past || [])].sort((x, y) => (x.sort || '9999').localeCompare(y.sort || '9999')).map(e => `<article class="card glow ev done reveal in"><span class="tag">${esc(e.tag)}</span><div class="ev-ico">${esc(e.emoji)}</div><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p>${e.winner ? `<div class="winner"><span class="trophy">🏆</span><div><small>Vencedor</small><b>${esc(e.winner)}</b></div></div>` : ''}<div class="count">✓ ${esc(e.when || "Data a confirmar")}</div></article>`).join('');
@@ -265,8 +268,13 @@
   // ---------- hall da fama ----------
   $('#hallList').innerHTML = D.hall.map(h => `<div class="card"><div class="em">${esc(h.emoji)}</div><h3>${esc(h.name)}</h3><small>${esc(h.role)}</small></div>`).join('');
   // ---------- staff ----------
-  $('#staffList').innerHTML = (D.staff || []).map((n, i) => `<div class="card glow staff-card"><span class="avatar" style="--h:${(i * 67 + 250) % 360}">${esc(n.charAt(0).toUpperCase())}</span><h3>${esc(n)}</h3><small>Staff</small></div>`).join('');
-  $$('.staff-card').forEach(el => el.classList.add('reveal'));
+  function renderStaff(list, shown) {
+    $('#staffList').innerHTML = list.map((s, i) => {
+      const o = typeof s === 'string' ? { name: s } : s, n = String(o.name || '?');
+      return `<div class="card glow staff-card reveal${shown ? ' in' : ''}"><span class="avatar" style="--h:${(i * 67 + 250) % 360}">${esc(n.charAt(0).toUpperCase())}${o.avatar ? `<img src="${esc(o.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><h3>${esc(n)}</h3><small>${esc(o.role || 'Staff')}</small></div>`;
+    }).join('');
+  }
+  renderStaff(D.staff || []);
 
   observe();
 
@@ -682,7 +690,7 @@
     idle(() => { fetchAb().catch(() => { }); }, { timeout: 2500 });   // baixa antes, para tocar na hora
     ui();
   })();
-  // ---------- membros em tempo real (contagem aproximada do Discord, via convite público) ----------
+  // ---------- servidor ao vivo: função do site (/api/discord, com o bot) ou, sem ela, o convite público ----------
   (function liveMembers() {
     const el = $('#memberCount'), badge = $('#liveBadge');
     if (!el) return;
@@ -701,17 +709,42 @@
     }
     show(D.members || 0);
     const m = String(D.invite || '').match(/discord\.gg\/([\w-]+)/);
-    if (!m) return;
-    const api = 'https://discord.com/api/v10/invites/' + m[1] + '?with_counts=true';
-    async function pull() {
-      if (busy || document.hidden) return; busy = true;
-      const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 8000);
+    const inviteApi = m ? 'https://discord.com/api/v10/invites/' + m[1] + '?with_counts=true' : null;
+    let useApi = location.protocol.startsWith('http'), lastEv = '', lastStaff = '';
+    function apply(j) {
+      if (Number.isFinite(j.members) && j.members > 0) {
+        show(j.members);
+        if (badge) { badge.hidden = false; badge.title = j.membersSource === 'canal' ? 'Mesmo número do canal de membros do servidor' : 'Contagem do Discord em tempo real'; }
+      }
+      if (Array.isArray(j.events) && j.events.length) {
+        const k = JSON.stringify(j.events); if (k !== lastEv) { lastEv = k; EVENTS = j.events; renderEvents(); }
+      }
+      if (Array.isArray(j.staff) && j.staff.length) {
+        const k = JSON.stringify(j.staff); if (k !== lastStaff) { lastStaff = k; renderStaff(j.staff, true); }
+      }
+    }
+    async function fromApi(signal) {
       try {
-        const r = await fetch(api, { signal: ctl.signal, cache: 'no-store' });
-        if (!r.ok) throw new Error('http ' + r.status);
+        const r = await fetch('/api/discord', { signal });
+        if (r.status === 503 || r.status === 404) { useApi = false; return false; }   // bot ainda não configurado
+        if (!r.ok) return false;
+        const j = await r.json(); if (!j || !j.ok) return false;
+        apply(j); return true;
+      } catch (e) { return false; }
+    }
+    async function fromInvite(signal) {
+      if (!inviteApi) return;
+      try {
+        const r = await fetch(inviteApi, { signal, cache: 'no-store' });
+        if (!r.ok) return;
         const n = (await r.json()).approximate_member_count;
         if (Number.isFinite(n) && n > 0) { show(n); if (badge) badge.hidden = false; }
-      } catch (e) { /* sem rede ou bloqueado: continua mostrando o número de data.js */ }
+      } catch (e) { /* sem rede: continua o número do data.js */ }
+    }
+    async function pull() {
+      if (busy || document.hidden) return; busy = true;
+      const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 9000);
+      if (!(useApi && await fromApi(ctl.signal))) await fromInvite(ctl.signal);
       clearTimeout(to); busy = false;
     }
     pull(); setInterval(pull, 60000);
