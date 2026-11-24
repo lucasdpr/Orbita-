@@ -497,7 +497,7 @@
               alb = mix(alb, vec3(0.31, 0.85, 1.0), panel*(1.0 - smoothstep(0.014, 0.022, length(pc - vec2(-0.03, -0.055)))));
               alb = mix(alb, vec3(1.0, 0.82, 0.31), panel*(1.0 - smoothstep(0.014, 0.022, length(pc - vec2(0.03, -0.055)))));
             }
-            // bandeira LGBT+ no peito
+            // bandeira LGBTQIAPN+ no peito
             vec2 fc = vec2(lp.x - 0.20, lp.y + 0.20);
             if (lp.z > 0.15 && abs(fc.x) < 0.085 && abs(fc.y) < 0.058) {
               float k = floor((fc.y + 0.058) / 0.0193);
