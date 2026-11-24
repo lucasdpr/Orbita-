@@ -563,7 +563,7 @@
     const uRes = gl.getUniformLocation(pg, 'uRes'), uTime = gl.getUniformLocation(pg, 'uTime'), uR = gl.getUniformLocation(pg, 'uR');
     gl.uniform1f(uR, 1 / scale);
     box.appendChild(cvs); box.classList.add('gl');
-    let visible = false, raf = 0, last = 0;
+    let visible = false, raf = 0, last = 0, dead = false;
     const t0 = performance.now();
     function size() {
       const px = Math.min(Math.round(cvs.clientWidth * Math.min(devicePixelRatio || 1, 2)), 640) || 256;
@@ -574,23 +574,56 @@
       gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
     function loop(now) {
-      if (!visible) { raf = 0; return; }
+      if (!visible || dead) { raf = 0; return; }
       if (now - last > 33) { last = now; draw(now); }
       raf = requestAnimationFrame(loop);
     }
-    new IntersectionObserver(es => {
+    const vis = new IntersectionObserver(es => {
+      if (dead) return;
       visible = es[0].isIntersecting;
       if (visible && !raf && !reduce) raf = requestAnimationFrame(loop);
       if (visible && reduce) draw(performance.now());
-    }, { rootMargin: '120px' }).observe(box);
-    addEventListener('resize', () => { if (reduce && visible) draw(performance.now()); });
-    return true;
+    }, { rootMargin: '120px' });
+    vis.observe(box);
+    addEventListener('resize', () => { if (reduce && visible && !dead) draw(performance.now()); });
+    return {
+      stop() {   // desliga o 3D ao vivo e libera a placa de vídeo
+        dead = true; vis.disconnect();
+        try { const x = gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) { }
+        cvs.remove(); box.classList.remove('gl');
+      }
+    };
   }
-  const finalSun = $('.sun-real'), solarSun = $('.sun');
-  if (finalSun) createGL(finalSun, 2.2, SUN_FS);
-  if (solarSun) createGL(solarSun, 3, SUN_FS);
-  const astroBox = $('.astro');
-  if (astroBox) createGL(astroBox, 1, ASTRO_FS);
+  // ---------- qualidade: 3D ao vivo no computador; no celular ou aparelho fraco, imagens renderizadas do mesmo 3D ----------
+  // ?3d=1 força o 3D e ?3d=0 força as imagens (para testar).
+  const finalSun = $('.sun-real'), solarSun = $('.sun'), astroBox = $('.astro');
+  const force = new URLSearchParams(location.search).get('3d');
+  const touch = matchMedia('(pointer: coarse)').matches || innerWidth < 820;
+  const weak = (navigator.hardwareConcurrency || 8) <= 4 || !!(navigator.connection && navigator.connection.saveData);
+  function useImages() {
+    document.documentElement.classList.add('lite3d');
+    [[finalSun, 'assets/sol.webp', 'lite-sun'], [solarSun, 'assets/sol.webp', 'lite-sun'], [astroBox, 'assets/astronauta.webp', 'lite-astro']].forEach(([box, src, cls]) => {
+      if (!box || box.querySelector('img.' + cls)) return;
+      const im = new Image(); im.className = cls; im.alt = ''; im.decoding = 'async'; im.src = src;
+      box.appendChild(im); box.classList.add('img3d');
+    });
+  }
+  if (force === '0' || (force !== '1' && (touch || weak || reduce))) useImages();
+  else {
+    const live = [finalSun && createGL(finalSun, 2.2, SUN_FS), solarSun && createGL(solarSun, 3, SUN_FS), astroBox && createGL(astroBox, 1, ASTRO_FS)].filter(Boolean);
+    if (!live.length) useImages();                        // sem WebGL: imagens (mesma aparência)
+    else if (force !== '1') {
+      // vigia: se a página ficar travando com o 3D, troca para as imagens
+      let frames = 0, t0 = 0, prev = 0;
+      const watch = t => {
+        if (!t0 || t - prev > 400) { t0 = t; frames = 0; }   // aba oculta ou pausa: recomeça a medir
+        prev = t; frames++;
+        if (t - t0 < 3000) return requestAnimationFrame(watch);
+        if (frames / ((t - t0) / 1000) < 40) { live.forEach(c => c.stop()); useImages(); }
+      };
+      setTimeout(() => requestAnimationFrame(watch), 1200);
+    }
+  }
   // ---------- música de fundo (arquivo próprio; Web Audio para o loop emendar sem corte) ----------
   (function music() {
     const M = D.music, btn = $('#musicBtn');

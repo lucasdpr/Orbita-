@@ -436,3 +436,18 @@ html:not(.entered) body{overflow:hidden}
 .music-btn.on .mute-ico{display:none}
 .music-btn.on .eq{height:18px}
 @media(max-width:480px){.music{left:10px;bottom:10px}.music-btn{width:46px;height:46px}}
+
+/* ---------- modo leve: imagens renderizadas do 3D (celular / aparelho fraco) ---------- */
+.img3d > svg,.sun-real.img3d .sun-disc,.sun-real.img3d .sun-rays{display:none}
+.astro.img3d{width:clamp(220px,27vw,360px);right:2%;bottom:3%}
+.astro.img3d img{display:block;width:100%;height:auto;position:relative;z-index:2;animation:astroFloat 7s ease-in-out infinite;transform-origin:50% 55%}
+@keyframes astroFloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-12px) rotate(4deg)}}
+.astro.img3d::before{content:"";position:absolute;inset:6%;border-radius:50%;z-index:1;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,79,216,.38),rgba(139,92,255,.16) 45%,transparent 70%);filter:blur(14px)}
+img.lite-sun{position:absolute;inset:-100%;width:300%;height:300%;max-width:none;z-index:2;pointer-events:none;animation:spin 240s linear infinite}
+.sun.img3d{background:none;box-shadow:none;animation:none}
+.sun.img3d::after{display:none}
+.sun-real.img3d .sun-halo{inset:-150%;opacity:.8}
+@media(max-width:820px){
+  .astro.img3d{width:150px;margin-left:-75px;top:88px;bottom:auto;right:auto}
+}
