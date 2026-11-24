@@ -90,12 +90,6 @@
   const observe = () => $$('.reveal:not(.in)').forEach(el => io.observe(el));
   observe();
 
-  $$('[data-count]').forEach(el => {
-    const end = +el.dataset.count;
-    if (reduce) { el.textContent = end; return; }
-    const t0 = performance.now();
-    (function tick(t) { const p = Math.min((t - t0) / 1600, 1); el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(tick); })(t0);
-  });
 
   // ---------- sistema solar ----------
   const PLANETS = [
@@ -240,10 +234,10 @@
     const tags = ['Todos', ...new Set(D.events.map(e => e.tag))];
     fBox.innerHTML = D.events.length < 2 ? '' : tags.map(t => `<button class="chip ${t === filter ? 'on' : ''}" data-f="${esc(t)}">${esc(t)}</button>`).join('');
     const now = Date.now();
-    const list = D.events.filter(e => filter === 'Todos' || e.tag === filter).sort((a, b) => new Date(a.date) - new Date(b.date));
+    const list = D.events.filter(e => filter === 'Todos' || e.tag === filter).sort((a, b) => (a.date ? +new Date(a.date) : 8.64e15) - (b.date ? +new Date(b.date) : 8.64e15));
     evBox.innerHTML = list.length ? list.map(e => {
-      const t = new Date(e.date), ms = t - now;
-      return `<article class="card glow ev reveal in ${ms <= 0 ? 'past' : ''}"><span class="tag">${esc(e.tag)}</span><h3>${esc(e.title)}</h3><div class="date">${esc(fmt.format(t))}</div><p>${esc(e.desc)}</p><div class="count">${countdown(ms)}</div></article>`;
+      const t = e.date ? new Date(e.date) : null, ms = t ? t - now : Infinity;
+      return `<article class="card glow ev reveal in ${t && ms <= 0 ? 'past' : ''}"><span class="tag">${esc(e.tag)}</span>${e.emoji ? `<div class="ev-ico">${esc(e.emoji)}</div>` : ''}<h3>${esc(e.title)}</h3><div class="date">${esc(t ? fmt.format(t) : (e.when || 'Em breve'))}</div><p>${esc(e.desc)}</p><div class="count">${t ? countdown(ms) : '⏳ Data a confirmar'}</div></article>`;
     }).join('') : '<div class="events-empty"><span class="ico">🔭</span><div><b>Nenhum evento agendado agora</b>Os próximos são anunciados no <code>#eventos</code> do Discord.</div></div>';
   }
   $('#pastEvents').innerHTML = [...(D.past || [])].sort((x, y) => (x.sort || '9999').localeCompare(y.sort || '9999')).map(e => `<article class="card glow ev done reveal in"><span class="tag">${esc(e.tag)}</span><div class="ev-ico">${esc(e.emoji)}</div><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p>${e.winner ? `<div class="winner"><span class="trophy">🏆</span><div><small>Vencedor</small><b>${esc(e.winner)}</b></div></div>` : ''}<div class="count">✓ ${esc(e.when || "Data a confirmar")}</div></article>`).join('');
@@ -352,6 +346,8 @@
         cc += vec3(1.0, 0.40, 0.16) * 0.6 * exp(-abs(h)/r0*70.0);
         col += cc * smoothstep(r0 - 0.012, r0 + 0.004, d);
       }
+      float env = 1.0 - smoothstep(0.55, 1.0, d);
+      col *= env * env;
       col = clamp(col, 0.0, 1.0);
       float al = max(col.r, max(col.g, col.b));
       gl_FragColor = vec4(col, al);
@@ -670,5 +666,40 @@
     };
     const idle = window.requestIdleCallback || (f => setTimeout(f, 800));
     idle(() => ensureApi(), { timeout: 1500 });
+  })();
+  // ---------- membros em tempo real (contagem aproximada do Discord, via convite público) ----------
+  (function liveMembers() {
+    const el = $('#memberCount'), badge = $('#liveBadge');
+    if (!el) return;
+    let last = null, anim = 0, busy = false;
+    function show(n) {
+      const from = last == null ? 0 : last; last = n;
+      const id = ++anim;
+      if (reduce || n === from) { el.textContent = n; return; }
+      const t0 = performance.now(), dur = last === n && from === 0 ? 1600 : 900;
+      (function tick(t) {
+        if (id !== anim) return;
+        const p = Math.min((t - t0) / dur, 1);
+        el.textContent = Math.round(from + (n - from) * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(tick);
+      })(t0);
+    }
+    show(D.members || 0);
+    const m = String(D.invite || '').match(/discord\.gg\/([\w-]+)/);
+    if (!m) return;
+    const api = 'https://discord.com/api/v10/invites/' + m[1] + '?with_counts=true';
+    async function pull() {
+      if (busy || document.hidden) return; busy = true;
+      const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 8000);
+      try {
+        const r = await fetch(api, { signal: ctl.signal, cache: 'no-store' });
+        if (!r.ok) throw new Error('http ' + r.status);
+        const n = (await r.json()).approximate_member_count;
+        if (Number.isFinite(n) && n > 0) { show(n); if (badge) badge.hidden = false; }
+      } catch (e) { /* sem rede ou bloqueado: continua mostrando o número de data.js */ }
+      clearTimeout(to); busy = false;
+    }
+    pull(); setInterval(pull, 60000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) pull(); });
   })();
 })();
