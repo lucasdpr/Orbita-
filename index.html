@@ -5,8 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Órbita | LGBTQIAPN+ Hangout</title>
 <meta name="description" content="Órbita: comunidade LGBTQIAPN+ no Discord. Hangout, calls, Mudae, eventos, Roblox, Minecraft e muito mais.">
+<link rel="canonical" href="https://orbita-blue-psi.vercel.app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Órbita">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:url" content="https://orbita-blue-psi.vercel.app/">
+<meta property="og:title" content="Órbita • Hangout LGBTQIAPN+ • Brasil">
+<meta property="og:description" content="Comunidade LGBTQIAPN+ brasileira no Discord: calls, jogos, Mudae, eventos e conversa sem filtro, com respeito e moderação ativa. Entre na nossa órbita! 🚀">
+<meta property="og:image" content="https://orbita-blue-psi.vercel.app/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Órbita: astronauta acenando ao lado do Sol, com o texto Hangout LGBTQIAPN+ • Brasil">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Órbita • Hangout LGBTQIAPN+ • Brasil">
+<meta name="twitter:description" content="Comunidade LGBTQIAPN+ brasileira no Discord: calls, jogos, Mudae, eventos e conversa sem filtro, com respeito e moderação ativa. Entre na nossa órbita! 🚀">
+<meta name="twitter:image" content="https://orbita-blue-psi.vercel.app/assets/og.jpg">
 <meta name="theme-color" content="#0a0614">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪐</text></svg>">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/icon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -340,20 +357,12 @@
 </footer>
 
 <div class="music" id="music">
-  <button class="music-btn" id="musicBtn" aria-expanded="false" aria-controls="musicCard" title="Música de fundo">
-    <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="music-label">Música</span>
+  <button class="music-btn" id="musicBtn" aria-pressed="false" aria-label="Ligar música" title="Música de fundo">
+    <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="mute-ico" aria-hidden="true">🔇</span>
   </button>
-  <section class="music-card" id="musicCard" aria-label="Player de música" hidden>
-    <div class="music-video"><div id="ytPlayer"></div></div>
-    <div class="music-info"><b id="musicTitle"></b><small id="musicCredit"></small></div>
-    <div class="music-ctl">
-      <button id="musicToggle" aria-label="Pausar">⏸</button>
-      <input type="range" id="musicVol" min="0" max="100" value="35" aria-label="Volume">
-      <button id="musicClose" aria-label="Fechar e parar a música">✕</button>
-    </div>
-  </section>
 </div>
 
+<script defer src="/_vercel/insights/script.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
 </body>

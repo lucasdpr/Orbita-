@@ -563,7 +563,7 @@
     const uRes = gl.getUniformLocation(pg, 'uRes'), uTime = gl.getUniformLocation(pg, 'uTime'), uR = gl.getUniformLocation(pg, 'uR');
     gl.uniform1f(uR, 1 / scale);
     box.appendChild(cvs); box.classList.add('gl');
-    let visible = false, raf = 0, last = 0;
+    let visible = false, raf = 0, last = 0, dead = false;
     const t0 = performance.now();
     function size() {
       const px = Math.min(Math.round(cvs.clientWidth * Math.min(devicePixelRatio || 1, 2)), 640) || 256;
@@ -574,98 +574,113 @@
       gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
     function loop(now) {
-      if (!visible) { raf = 0; return; }
+      if (!visible || dead) { raf = 0; return; }
       if (now - last > 33) { last = now; draw(now); }
       raf = requestAnimationFrame(loop);
     }
-    new IntersectionObserver(es => {
+    const vis = new IntersectionObserver(es => {
+      if (dead) return;
       visible = es[0].isIntersecting;
       if (visible && !raf && !reduce) raf = requestAnimationFrame(loop);
       if (visible && reduce) draw(performance.now());
-    }, { rootMargin: '120px' }).observe(box);
-    addEventListener('resize', () => { if (reduce && visible) draw(performance.now()); });
-    return true;
-  }
-  const finalSun = $('.sun-real'), solarSun = $('.sun');
-  if (finalSun) createGL(finalSun, 2.2, SUN_FS);
-  if (solarSun) createGL(solarSun, 3, SUN_FS);
-  const astroBox = $('.astro');
-  if (astroBox) createGL(astroBox, 1, ASTRO_FS);
-  // ---------- música de fundo (YouTube IFrame API, carregada só ao clicar) ----------
-  (function music() {
-    const M = D.music; if (!M || !M.youtube) { const box = $('#music'); if (box) box.remove(); return; }
-    const btn = $('#musicBtn'), card = $('#musicCard'), tg = $('#musicToggle'), vol = $('#musicVol'), cl = $('#musicClose');
-    $('#musicTitle').textContent = M.title || 'Música'; $('#musicCredit').textContent = M.credit || '';
-    let volume = M.volume == null ? 35 : M.volume;
-    try { const v = parseInt(localStorage.getItem('orbita-vol'), 10); if (v >= 0 && v <= 100) volume = v; } catch (e) { }
-    vol.value = volume;
-    let player = null, ready = false, wantPlay = false, playing = false, resumeOnShow = false, loading = false, apiReady = !!(window.YT && window.YT.Player), wantBuild = false;
-    const getPref = () => { try { return localStorage.getItem('orbita-music'); } catch (e) { return null; } };
-    const setPref = v => { try { localStorage.setItem('orbita-music', v); } catch (e) { } };
-
-    function ui() {
-      btn.classList.toggle('on', playing); btn.setAttribute('aria-expanded', !card.hidden);
-      tg.textContent = playing ? '⏸' : '▶'; tg.setAttribute('aria-label', playing ? 'Pausar' : 'Tocar');
-    }
-    function build() {
-      player = new YT.Player('ytPlayer', {
-        width: 240, height: 240, videoId: M.youtube, host: 'https://www.youtube-nocookie.com',
-        playerVars: { start: M.start || 0, end: M.end || 0, controls: 0, disablekb: 1, modestbranding: 1, playsinline: 1, rel: 0, iv_load_policy: 3, origin: location.origin },
-        events: {
-          onReady: () => { ready = true; player.setVolume(volume); if (wantPlay) player.playVideo(); },
-          onStateChange: e => {
-            if (e.data === 1) playing = true;
-            else if (e.data === 2 || e.data === -1 || e.data === 5) playing = false;
-            else if (e.data === 0) { player.seekTo(M.start || 0, true); player.playVideo(); return; }
-            ui();
-          },
-          onError: () => { playing = false; wantPlay = false; card.hidden = true; ui(); toast('Não foi possível tocar essa música agora 😕'); }
-        }
-      });
-    }
-    function ensureApi() {
-      if (apiReady || loading) return; loading = true;
-      window.onYouTubeIframeAPIReady = () => { apiReady = true; if (wantBuild && !player) build(); };
-      const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; s.async = true;
-      s.onerror = () => { loading = false; if (wantBuild) { card.hidden = true; ui(); toast('Não consegui carregar o player de música'); } };
-      document.head.appendChild(s);
-    }
-    function open() {
-      card.hidden = false; wantPlay = true; setPref('on');
-      if (!player) { wantBuild = true; if (apiReady) build(); else ensureApi(); } else if (ready) player.playVideo();
-      ui();
-    }
-    function close() {
-      wantPlay = false; playing = false; card.hidden = true; setPref('off');
-      if (ready) player.pauseVideo(); ui();
-    }
-    btn.addEventListener('click', () => { if (card.hidden) open(); else close(); });
-    cl.addEventListener('click', close);
-    tg.addEventListener('click', () => {
-      if (!ready) return;
-      if (playing) { wantPlay = false; player.pauseVideo(); } else { wantPlay = true; player.playVideo(); }
-    });
-    vol.addEventListener('input', () => {
-      volume = +vol.value; if (ready) player.setVolume(volume);
-      try { localStorage.setItem('orbita-vol', String(volume)); } catch (e) { }
-    });
-    // não toca em segundo plano: pausa com a aba oculta e retoma ao voltar
-    document.addEventListener('visibilitychange', () => {
-      if (!ready) return;
-      if (document.hidden) { resumeOnShow = playing; if (playing) player.pauseVideo(); }
-      else if (resumeOnShow) { resumeOnShow = false; player.playVideo(); }
-    });
-    ui();
-    // o botão "Entrar" da tela de boas-vindas chama isto: o clique libera o som no navegador
-    window.__orbitaMusic = {
-      autostart() {
-        if (getPref() === 'off' || !card.hidden) return;
-        open();
-        setTimeout(() => { if (!playing && !card.hidden) toast('Toque em ▶ para ouvir a música 🎵'); }, 4000);
+    }, { rootMargin: '120px' });
+    vis.observe(box);
+    addEventListener('resize', () => { if (reduce && visible && !dead) draw(performance.now()); });
+    return {
+      stop() {   // desliga o 3D ao vivo e libera a placa de vídeo
+        dead = true; vis.disconnect();
+        try { const x = gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) { }
+        cvs.remove(); box.classList.remove('gl');
       }
     };
+  }
+  // ---------- qualidade: 3D ao vivo no computador; no celular ou aparelho fraco, imagens renderizadas do mesmo 3D ----------
+  // ?3d=1 força o 3D e ?3d=0 força as imagens (para testar).
+  const finalSun = $('.sun-real'), solarSun = $('.sun'), astroBox = $('.astro');
+  const force = new URLSearchParams(location.search).get('3d');
+  const touch = matchMedia('(pointer: coarse)').matches || innerWidth < 820;
+  const weak = (navigator.hardwareConcurrency || 8) <= 4 || !!(navigator.connection && navigator.connection.saveData);
+  function useImages() {
+    document.documentElement.classList.add('lite3d');
+    [[finalSun, 'assets/sol.webp', 'lite-sun'], [solarSun, 'assets/sol.webp', 'lite-sun'], [astroBox, 'assets/astronauta.webp', 'lite-astro']].forEach(([box, src, cls]) => {
+      if (!box || box.querySelector('img.' + cls)) return;
+      const im = new Image(); im.className = cls; im.alt = ''; im.decoding = 'async'; im.src = src;
+      box.appendChild(im); box.classList.add('img3d');
+    });
+  }
+  if (force === '0' || (force !== '1' && (touch || weak || reduce))) useImages();
+  else {
+    const live = [finalSun && createGL(finalSun, 2.2, SUN_FS), solarSun && createGL(solarSun, 3, SUN_FS), astroBox && createGL(astroBox, 1, ASTRO_FS)].filter(Boolean);
+    if (!live.length) useImages();                        // sem WebGL: imagens (mesma aparência)
+    else if (force !== '1') {
+      // vigia: se a página ficar travando com o 3D, troca para as imagens
+      let frames = 0, t0 = 0, prev = 0;
+      const watch = t => {
+        if (!t0 || t - prev > 400) { t0 = t; frames = 0; }   // aba oculta ou pausa: recomeça a medir
+        prev = t; frames++;
+        if (t - t0 < 3000) return requestAnimationFrame(watch);
+        if (frames / ((t - t0) / 1000) < 40) { live.forEach(c => c.stop()); useImages(); }
+      };
+      setTimeout(() => requestAnimationFrame(watch), 1200);
+    }
+  }
+  // ---------- música de fundo (arquivo próprio; Web Audio para o loop emendar sem corte) ----------
+  (function music() {
+    const M = D.music, btn = $('#musicBtn');
+    if (!M || !M.src || !btn) { const box = $('#music'); if (box) box.remove(); return; }
+    const VOL = M.volume == null ? 0.4 : M.volume;
+    const getPref = () => { try { return localStorage.getItem('orbita-music'); } catch (e) { return null; } };
+    const setPref = v => { try { localStorage.setItem('orbita-music', v); } catch (e) { } };
+    const AC = window.AudioContext || window.webkitAudioContext;
+    let ctx = null, gain = null, buf = null, node = null, on = false, hiddenPause = false, abP = null, fallback = null;
+
+    function ui() {
+      btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', String(on));
+      btn.setAttribute('aria-label', on ? 'Silenciar música' : 'Ligar música');
+    }
+    const fetchAb = () => abP || (abP = fetch(M.src).then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.arrayBuffer(); })
+      .catch(e => { abP = null; throw e; }));
+    function ensureCtx() {   // chamado dentro do clique: libera o áudio no navegador
+      if (!ctx) { ctx = new AC(); gain = ctx.createGain(); gain.gain.value = 0; gain.connect(ctx.destination); }
+      if (ctx.state === 'suspended') ctx.resume();
+    }
+    function fade(to, secs) {
+      const t = ctx.currentTime; gain.gain.cancelScheduledValues(t);
+      gain.gain.setValueAtTime(gain.gain.value, t); gain.gain.linearRampToValueAtTime(to, t + secs);
+    }
+    async function start() {
+      on = true; ui(); setPref('on');
+      if (!AC) {   // navegador sem Web Audio: <audio> com loop
+        if (!fallback) { fallback = new Audio(M.src); fallback.loop = true; fallback.volume = VOL; }
+        fallback.play().catch(() => { on = false; ui(); });
+        return;
+      }
+      ensureCtx();
+      try {
+        if (!buf) { const ab = await fetchAb(); buf = await new Promise((res, rej) => ctx.decodeAudioData(ab.slice(0), res, rej)); }
+      } catch (e) { on = false; ui(); toast('Não consegui carregar a música 😕'); return; }
+      if (!on) return;
+      if (!node) { node = ctx.createBufferSource(); node.buffer = buf; node.loop = true; node.connect(gain); node.start(); }
+      if (ctx.state === 'suspended') ctx.resume();
+      fade(VOL, 1.2);
+    }
+    function stop() {
+      on = false; ui(); setPref('off');
+      if (fallback) fallback.pause();
+      if (ctx && gain) fade(0, 0.5);
+    }
+    btn.addEventListener('click', () => { if (on) stop(); else start(); });
+    // não toca com a aba em segundo plano
+    document.addEventListener('visibilitychange', () => {
+      if (!on) return;
+      if (document.hidden) { hiddenPause = true; if (ctx) ctx.suspend(); if (fallback) fallback.pause(); }
+      else if (hiddenPause) { hiddenPause = false; if (ctx) ctx.resume(); if (fallback) fallback.play().catch(() => { }); }
+    });
+    // o botão "Entrar" da tela de boas-vindas chama isto
+    window.__orbitaMusic = { autostart() { if (getPref() !== 'off' && !on) start(); } };
     const idle = window.requestIdleCallback || (f => setTimeout(f, 800));
-    idle(() => ensureApi(), { timeout: 1500 });
+    idle(() => { fetchAb().catch(() => { }); }, { timeout: 2500 });   // baixa antes, para tocar na hora
+    ui();
   })();
   // ---------- membros em tempo real (contagem aproximada do Discord, via convite público) ----------
   (function liveMembers() {

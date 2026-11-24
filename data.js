@@ -9,9 +9,8 @@ window.ORBITA = {
   invite: "https://discord.gg/aD2ArYSsm4",
   members: 1300,
 
-  // Música de fundo (player do YouTube, só toca quando a pessoa clica).
-  // "end" = segundos tocados do início do vídeo antes de recomeçar o loop (300 = 5 min).
-  music: { youtube: "GEjR4GX7GK0", title: "Extraterrestrial Expedition", credit: "Nintendo Space Music · CrazyCloud", start: 0, end: 300, volume: 35 },
+  // Música de fundo: trilha original da Órbita (arquivo próprio, em loop). volume de 0 a 1.
+  music: { src: "assets/orbita-tema.mp3", title: "Órbita — tema ambiente", volume: 0.4 },
 
   // Próximos eventos. date: AAAA-MM-DDTHH:MM (horário de Brasília). Deixe [] se não houver nenhum agendado.
   // Sem "date" o card mostra "Data a confirmar". Quando souber, use date: "AAAA-MM-DDTHH:MM" para ligar a contagem regressiva.
