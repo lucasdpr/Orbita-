@@ -340,18 +340,9 @@
 </footer>
 
 <div class="music" id="music">
-  <button class="music-btn" id="musicBtn" aria-expanded="false" aria-controls="musicCard" title="Música de fundo">
-    <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="music-label">Música</span>
+  <button class="music-btn" id="musicBtn" aria-pressed="false" aria-label="Ligar música" title="Música de fundo">
+    <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="mute-ico" aria-hidden="true">🔇</span>
   </button>
-  <section class="music-card" id="musicCard" aria-label="Player de música" hidden>
-    <div class="music-video"><div id="ytPlayer"></div></div>
-    <div class="music-info"><b id="musicTitle"></b><small id="musicCredit"></small></div>
-    <div class="music-ctl">
-      <button id="musicToggle" aria-label="Pausar">⏸</button>
-      <input type="range" id="musicVol" min="0" max="100" value="35" aria-label="Volume">
-      <button id="musicClose" aria-label="Fechar e parar a música">✕</button>
-    </div>
-  </section>
 </div>
 
 <script src="data.js"></script>
