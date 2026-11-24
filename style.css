@@ -439,3 +439,8 @@ html:not(.entered) body{overflow:hidden}
   .music-card{width:232px}
   .music-video,.music-video iframe{width:200px;height:200px}
 }
+
+/* ---------- membros ao vivo ---------- */
+.stats .live{font-style:normal;color:var(--green);font-size:.64rem;letter-spacing:.12em;margin-left:6px;white-space:nowrap}
+.stats .live::first-letter{animation:blink 1.8s infinite}
+@media(max-width:480px){.eyebrow{letter-spacing:.06em;font-size:.68rem;padding:8px 14px}}
