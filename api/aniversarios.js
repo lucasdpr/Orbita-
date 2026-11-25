@@ -25,10 +25,10 @@ module.exports = async (req, res) => {
   try {
     let guildId = process.env.DISCORD_GUILD_ID;
     if (!guildId) { const gs = await dc('/users/@me/guilds'); const g = gs.find(x => /[oó]rbita/i.test(x.name || '')) || gs[0]; if (!g) throw new Error('bot fora do servidor'); guildId = g.id; }
-    const [chans, roles, me] = await Promise.all([dc(`/guilds/${guildId}/channels`), dc(`/guilds/${guildId}/roles`), dc('/users/@me')]);
-    const bch = chans.find(B.isBirthdayChannel);
+    const [chans, me] = await Promise.all([dc(`/guilds/${guildId}/channels`), dc('/users/@me')]);
+    const bch = chans.find(B.isBirthdayChannel), rec = chans.find(B.isRecordsChannel);
     const chat = chans.find(c => c.type === 0 && B.chanKey(c.name).includes('batepapo'));
-    if (!bch || !chat) return res.status(200).json({ ok: false, error: 'canal de aniversários ou bate-papo não encontrado' });
+    if (!bch || !rec || !chat) return res.status(200).json({ ok: false, error: 'canal de aniversários ou bate-papo não encontrado' });
 
     const members = []; let after = '0';
     for (let page = 0; page < 10; page++) {
@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
       members.push(...batch); if (batch.length < 1000) break; after = batch[batch.length - 1].user.id;
     }
     const byMember = new Map(members.filter(m => !m.user.bot).map(m => [m.user.id, m]));
-    const map = B.birthdayMap(await B.readMessages(dc, bch.id), byMember, B.staffChecker(roles));
+    const map = B.recordsMap(await B.readMessages(dc, rec.id), me.id, byMember);
     const today = B.todayBR();
     const ids = [...map].filter(([, b]) => B.isToday(b, today)).map(([id]) => id);
     if (!ids.length) return res.status(200).json({ ok: true, posted: false, reason: 'ninguém faz aniversário hoje', registered: map.size });

@@ -1,11 +1,8 @@
-// Aniversários: lê o canal "aniversários" do Discord e descobre o dia/mês de cada pessoa.
-// Arquivos em api/ que começam com "_" não viram rota no Vercel: este é só um módulo usado por
-// api/discord.js (lista do site) e api/aniversarios.js (parabéns diário no bate-papo).
-//
-// Como a galera cadastra: manda no canal uma mensagem com a data, ex. "15/03", "15/3", "15-03" ou "15 de março".
-// - Vale a mensagem MAIS RECENTE de cada pessoa; se apagar a mensagem, sai da lista.
-// - Staff (quem tem "Gerenciar mensagens" ou Administrador em algum cargo) pode cadastrar outra pessoa: "@fulano 15/03".
-// - Ninguém informa o ano: só dia e mês saem daqui.
+// Aniversários: as datas ficam num canal ESCONDIDO ("aniversarios-registros", só o bot e a administração veem).
+// Cada registro é uma mensagem do próprio bot: "<@id> 15/03". Uma por pessoa; ao alterar, o bot apaga a antiga.
+// A galera cadastra pelo botão "🎂 Cadastrar aniversário" do canal público 🎂│aniversários (ou /aniversario),
+// que abre uma janelinha com dia e mês (api/interactions.js). Só dia e mês: ninguém informa o ano.
+// Arquivos em api/ que começam com "_" não viram rota no Vercel: este é só um módulo compartilhado.
 
 const MONTHS = { jan: 1, fev: 2, mar: 3, abr: 4, mai: 5, jun: 6, jul: 7, ago: 8, set: 9, out: 10, nov: 11, dez: 12 };
 const MONTH_NAMES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
@@ -14,7 +11,8 @@ const TZ = 'America/Sao_Paulo';
 
 const plain = s => String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const chanKey = s => plain(s).replace(/[^a-z0-9]+/g, '');
-const isBirthdayChannel = c => (c.type === 0 || c.type === 5) && chanKey(c.name).includes('aniversari');
+const isRecordsChannel = c => c.type === 0 && chanKey(c.name).includes('aniversari') && chanKey(c.name).includes('registro');
+const isBirthdayChannel = c => c.type === 0 && chanKey(c.name).includes('aniversari') && !isRecordsChannel(c);
 
 // "15/03", "15/3/1999", "15-03", "15.03", "15 de março", "15 mar" -> { d: 15, m: 3 }
 function parseBirthday(text) {
@@ -31,12 +29,6 @@ function parseBirthday(text) {
   return { d, m };
 }
 
-// staff = algum cargo da pessoa tem Administrador (1<<3) ou Gerenciar mensagens (1<<13)
-function staffChecker(roles) {
-  const strong = new Set(roles.filter(r => { const p = BigInt(r.permissions || 0); return (p & 8n) || (p & 8192n); }).map(r => r.id));
-  return member => !!member && member.roles.some(id => strong.has(id));
-}
-
 // lê até 500 mensagens do canal (das mais novas para as mais antigas)
 async function readMessages(dc, channelId) {
   const all = []; let before = '';
@@ -49,19 +41,16 @@ async function readMessages(dc, channelId) {
   return all;
 }
 
-// mensagens -> Map(userId -> {d, m}). byMember: Map(userId -> membro), só quem ainda está no servidor entra.
-function birthdayMap(msgs, byMember, isStaff) {
+// registros do bot -> Map(userId -> {d, m, msgId}). Só mensagens do próprio bot contam; byMember (opcional) filtra quem saiu.
+const RECORD_RE = /^<@!?(\d+)>\s+(\d{1,2})\/(\d{1,2})\b/;
+const recordText = (id, b) => `<@${id}> ${String(b.d).padStart(2, '0')}/${String(b.m).padStart(2, '0')}`;
+function recordsMap(msgs, botId, byMember) {
   const out = new Map();
-  const ordered = msgs.filter(m => !m.author.bot && m.content).sort((a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1));
+  const ordered = msgs.filter(m => m.author.id === botId).sort((a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1));
   for (const msg of ordered) {
-    let target = msg.author.id;
-    const mention = msg.content.match(/^\s*<@!?(\d+)>/);
-    if (mention && mention[1] !== msg.author.id) {
-      if (!isStaff(byMember.get(msg.author.id))) continue;   // só staff cadastra outra pessoa
-      target = mention[1];
-    }
-    const b = parseBirthday(msg.content);
-    if (b && byMember.has(target)) out.set(target, b);
+    const r = (msg.content || '').match(RECORD_RE); if (!r) continue;
+    const b = parseBirthday(r[2] + '/' + r[3]);
+    if (b && (!byMember || byMember.has(r[1]))) out.set(r[1], { ...b, msgId: msg.id });
   }
   return out;
 }
@@ -76,4 +65,4 @@ const isLeap = y => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
 // quem faz 29/02 comemora em 28/02 nos anos que não são bissextos
 const isToday = (b, t) => (b.d === t.d && b.m === t.m) || (b.d === 29 && b.m === 2 && t.d === 28 && t.m === 2 && !isLeap(t.y));
 
-module.exports = { parseBirthday, staffChecker, readMessages, birthdayMap, todayBR, isToday, isBirthdayChannel, chanKey, MONTH_NAMES, TZ };
+module.exports = { parseBirthday, readMessages, recordsMap, recordText, todayBR, isToday, isBirthdayChannel, isRecordsChannel, chanKey, MONTH_NAMES, TZ };
