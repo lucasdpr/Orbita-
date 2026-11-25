@@ -271,7 +271,9 @@
   function renderStaff(list, shown) {
     $('#staffList').innerHTML = list.map((s, i) => {
       const o = typeof s === 'string' ? { name: s } : s, n = String(o.name || '?');
-      return `<div class="card glow staff-card reveal${shown ? ' in' : ''}"><span class="avatar" style="--h:${(i * 67 + 250) % 360}">${esc(n.charAt(0).toUpperCase())}${o.avatar ? `<img src="${esc(o.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><h3>${esc(n)}</h3><small>${esc(o.role || 'Staff')}</small></div>`;
+      const first = (Array.from(n.trim())[0] || '?').toUpperCase();             // Array.from: não quebra letras especiais/emoji
+      const role = String(o.role || 'Staff').replace(/^\s*【\s*(.*?)\s*】\s*/, '$1 ').trim();   // "【☄️】Administração" -> "☄️ Administração"
+      return `<div class="card glow staff-card reveal${shown ? ' in' : ''}"><span class="avatar" style="--h:${(i * 67 + 250) % 360}">${esc(first)}${o.avatar ? `<img src="${esc(o.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><h3>${esc(n)}</h3><small>${esc(role)}</small></div>`;
     }).join('');
   }
   renderStaff(D.staff || []);
