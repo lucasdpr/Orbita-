@@ -334,7 +334,7 @@
     }
   }
   // ---------- apoiadores (boosters e VIPs) ----------
-  const cleanRole = r => String(r || '').replace(/^\s*【\s*(.*?)\s*】\s*/, '$1 ').trim();
+  const cleanRole = r => String(r || '').replace(/^\s*【\s*(.*?)\s*】\s*/, '$1 ').replace(/^[\s—–\-•·|┊]+|[\s—–\-•·|┊]+$/g, '').trim();
   function personCard(p, extra) {
     const n = String(p.name || '?'), first = (Array.from(n.trim())[0] || '?').toUpperCase();
     return `<div class="person"><span class="avatar sm" style="--h:${(n.length * 47 + 200) % 360}">${esc(first)}${p.avatar ? `<img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><b>${esc(n)}</b>${extra ? `<small>${esc(extra)}</small>` : ''}</div>`;

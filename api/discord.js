@@ -9,7 +9,9 @@ const ENV_STAFF_ROLE_IDS = (process.env.DISCORD_STAFF_ROLE_IDS || '').split(',')
 // categorias mostradas no "Mapa da Galáxia" (comparadas sem acento, emoji ou símbolo)
 const MAP_CATEGORIES = (process.env.DISCORD_MAP_CATEGORIES || 'interacao,comunicacao,joguinhos,musicas,premium').split(',').map(s => s.trim()).filter(Boolean);
 const STAFF_NAME = /staff|moder|admin|equipe|suporte|ajudante|helper|\bmods?\b/i;
-const VIP_NAME = /vip/i;   // cargos de VIP (ex.: "【👑】VIP")
+// cargos de VIP: qualquer nome com "VIP", em qualquer estilo de letra (ＶＩＰ, 𝐕𝐈𝐏, [VIP]...) — comparado já normalizado
+const isVipRole = r => /vip/.test(norm(r.name));
+const isStaffName = n => STAFF_NAME.test(n || '') || /staff|moder|admin|equipe|suporte|ajudante|helper/.test(norm(n));
 const API = 'https://discord.com/api/v10';
 const CDN = 'https://cdn.discordapp.com';
 const MEMBERS_CHANNEL = /membros?\s*[:：\-–]\s*([\d][\d.,\s]*)/i;   // ex.: "Membros: 1300" / "Membros: 1.300"
@@ -43,7 +45,7 @@ const displayName = m => m.nick || m.user.global_name || m.user.username;
 
 function staffRoles(roles) {
   if (ENV_STAFF_ROLE_IDS.length) return roles.filter(r => ENV_STAFF_ROLE_IDS.includes(r.id));
-  return roles.filter(r => !r.managed && r.id !== GUILD_ID && STAFF_NAME.test(r.name || ''));
+  return roles.filter(r => !r.managed && r.id !== GUILD_ID && isStaffName(r.name));
 }
 
 async function resolveGuild(token) {
@@ -66,7 +68,7 @@ async function allMembers(token) {
   return out.filter(m => !m.user.bot);
 }
 
-function vipRoles(roles) { return roles.filter(r => !r.managed && r.id !== GUILD_ID && VIP_NAME.test(r.name || '')); }
+function vipRoles(roles) { return roles.filter(r => !r.managed && r.id !== GUILD_ID && isVipRole(r)); }
 
 function staffFrom(members, roles, chosen = staffRoles(roles)) {
   if (!chosen.length) return [];
