@@ -2,8 +2,12 @@
 // Segredo: DISCORD_BOT_TOKEN (variável de ambiente no painel do Vercel). Ele nunca vai para o navegador.
 // IDs não são segredo: ficam aqui (ou podem vir das variáveis DISCORD_GUILD_ID / DISCORD_STAFF_ROLE_IDS).
 
-const GUILD_ID = process.env.DISCORD_GUILD_ID || '';
-const STAFF_ROLE_IDS = (process.env.DISCORD_STAFF_ROLE_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
+// Se as variáveis não existirem, a função descobre sozinha: o servidor onde o bot está e os cargos cujo nome
+// parece de staff (Staff, Moderação, Administração, Equipe, Suporte...).
+const ENV_GUILD_ID = process.env.DISCORD_GUILD_ID || '';
+const ENV_STAFF_ROLE_IDS = (process.env.DISCORD_STAFF_ROLE_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
+const STAFF_NAME = /staff|moder|admin|equipe|suporte|ajudante|helper|\bmods?\b/i;
+let GUILD_ID = ENV_GUILD_ID;          // fica guardado entre chamadas enquanto a função estiver "quente"
 
 const API = 'https://discord.com/api/v10';
 const MEMBERS_CHANNEL = /membros?\s*[:：\-–]\s*([\d][\d.,\s]*)/i;   // ex.: "Membros: 1300" / "Membros: 1.300"
@@ -24,10 +28,25 @@ function avatarOf(member, guildId) {
   return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
 }
 
+function staffRoles(roles) {
+  if (ENV_STAFF_ROLE_IDS.length) return roles.filter(r => ENV_STAFF_ROLE_IDS.includes(r.id));
+  return roles.filter(r => !r.managed && r.id !== GUILD_ID && STAFF_NAME.test(r.name || ''));
+}
+
+async function resolveGuild(token) {
+  if (GUILD_ID) return GUILD_ID;
+  const guilds = await dc('/users/@me/guilds', token);
+  if (!guilds.length) { const e = new Error('o bot ainda não está em nenhum servidor (abra o link de convite)'); e.status = 404; throw e; }
+  const g = guilds.find(x => /[oó]rbita/i.test(x.name || '')) || guilds[0];
+  GUILD_ID = g.id;
+  return GUILD_ID;
+}
+
 async function staffList(token, roles) {
-  if (!STAFF_ROLE_IDS.length) return [];
+  const chosen = staffRoles(roles);
+  if (!chosen.length) return [];
   const pos = new Map(roles.map(r => [r.id, r]));
-  const wanted = new Set(STAFF_ROLE_IDS);
+  const wanted = new Set(chosen.map(r => r.id));
   const found = [];
   let after = '0';
   for (let page = 0; page < 10; page++) {             // até 10.000 membros
@@ -46,9 +65,14 @@ async function staffList(token, roles) {
 
 module.exports = async (req, res) => {
   const token = process.env.DISCORD_BOT_TOKEN;
-  if (!token || !GUILD_ID) {
+  if (!token) {
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(503).json({ ok: false, error: !token ? 'falta DISCORD_BOT_TOKEN' : 'falta o ID do servidor' });
+    return res.status(503).json({ ok: false, error: 'falta DISCORD_BOT_TOKEN' });
+  }
+  try { await resolveGuild(token); }
+  catch (e) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(e.status === 404 ? 503 : 502).json({ ok: false, error: e.message });
   }
   const [guild, channels, events, roles] = await Promise.allSettled([
     dc(`/guilds/${GUILD_ID}?with_counts=true`, token),
@@ -89,6 +113,7 @@ module.exports = async (req, res) => {
 
   // staff pelos cargos
   if (roles.status === 'fulfilled') {
+    out.staffRoles = staffRoles(roles.value).map(r => r.name);
     try { out.staff = await staffList(token, roles.value); }
     catch (e) { out.problems.push(e.message + (e.status === 403 ? ' (ative o Server Members Intent no portal do bot)' : '')); }
   } else out.problems.push(roles.reason.message);
