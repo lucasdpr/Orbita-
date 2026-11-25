@@ -118,6 +118,7 @@ module.exports = async (req, res) => {
     catch (e) { out.problems.push(e.message + (e.status === 403 ? ' (ative o Server Members Intent no portal do bot)' : '')); }
   } else out.problems.push(roles.reason.message);
 
-  res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=600');
+  // navegador não guarda (max-age=0); a CDN guarda 60 s. Com problema, guarda só 10 s para a correção aparecer logo.
+  res.setHeader('Cache-Control', out.problems.length ? 'public, max-age=0, s-maxage=10, stale-while-revalidate=10' : 'public, max-age=0, s-maxage=60, stale-while-revalidate=120');
   return res.status(200).json(out);
 };
