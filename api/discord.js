@@ -7,7 +7,7 @@
 const ENV_GUILD_ID = process.env.DISCORD_GUILD_ID || '';
 const ENV_STAFF_ROLE_IDS = (process.env.DISCORD_STAFF_ROLE_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
 // categorias mostradas no "Mapa da Galáxia" (comparadas sem acento, emoji ou símbolo)
-const MAP_CATEGORIES = (process.env.DISCORD_MAP_CATEGORIES || 'interacao,comunicacao,joguinhos,musicas,premium').split(',').map(s => s.trim()).filter(Boolean);
+const MAP_CATEGORIES = (process.env.DISCORD_MAP_CATEGORIES || 'interacao,comunicacao,multimidia,joguinhos,musicas,premium,servidor,suporte,redessociais').split(',').map(s => s.trim()).filter(Boolean);
 const STAFF_NAME = /staff|moder|admin|equipe|suporte|ajudante|helper|\bmods?\b/i;
 // cargos de VIP: qualquer nome com "VIP", em qualquer estilo de letra (ＶＩＰ, 𝐕𝐈𝐏, [VIP]...) — comparado já normalizado
 const isVipRole = r => /vip/.test(norm(r.name));
@@ -45,8 +45,13 @@ async function dc(path, token) {
 const norm = s => String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
 // "—✦SISTEMA_SOLAR✦—" -> "Sistema solar";  "⚫╭mercúrio" -> "Mercúrio"
 const pretty = s => {
-  const t = String(s || '').replace(/_/g, ' ').replace(/[^\p{L}\p{N}\s'-]/gu, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-  return t ? t.charAt(0).toUpperCase() + t.slice(1) : '';
+  // NFKC: "𝚖𝚎𝚛𝚌ú𝚛𝚒𝚘" -> "mercúrio"; palavras com letras espaçadas ("C O M U N I C A Ç Ã O") são juntadas
+  const words = String(s || '').normalize('NFKC').replace(/_/g, '  ').replace(/[^\p{L}\p{N}\s'-]/gu, ' ')
+    .split(/\s{2,}/).map(w => w.trim()).filter(Boolean)
+    .map(w => (/^(\S )+\S$/u.test(w) ? w.replace(/ /g, '') : w));
+  const t = words.join(' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  const first = Array.from(t)[0] || '';
+  return first ? first.toUpperCase() + t.slice(first.length) : '';
 };
 const since = id => new Date(Number((BigInt(id) >> 22n) + 1420070400000n)).toISOString();
 
@@ -91,7 +96,9 @@ function eventRoles(roles) {
   const i = sorted.findIndex(r => isSeparator(r) && norm(r.name).includes('evento'));
   if (i < 0) return [];
   const out = [];
-  for (let k = i + 1; k < sorted.length; k++) {
+  let k = i + 1;
+  while (k < sorted.length && isSeparator(sorted[k]) && !norm(sorted[k].name)) k++;   // pula separadores vazios logo após o título
+  for (; k < sorted.length; k++) {
     const r = sorted[k];
     if (isSeparator(r) || r.managed || r.id === GUILD_ID) break;
     out.push(r);
@@ -224,7 +231,7 @@ module.exports = async (req, res) => {
       out.vipRoles = vr.map(r => r.name);
       out.vips = staffFrom(members, roles.value, vr).slice(0, 100);
       out.eventRoles = eventRoles(roles.value).map(r => ({
-        name: String(r.name).replace(/【.*?】/g, '').trim(),
+        name: String(r.name).normalize('NFKC').replace(/【.*?】/g, '').trim(),
         emoji: (String(r.name).match(/【\s*(.*?)\s*】/) || [])[1] || '',
         count: members.filter(m => m.roles.includes(r.id)).length
       }));

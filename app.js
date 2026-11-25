@@ -106,7 +106,7 @@
     plutao: 'Hoje é um planeta-anão, mas aqui na Órbita continua com o seu lugar.'
   };
   const PALETTE = ['#b86bff', '#ff8ad8', '#6bd6ff', '#9dff8a', '#ffd36b'];
-  const pkey = n => String(n).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+  const pkey = n => String(n).normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]/g, '');
   // Órbitas elípticas "inclinadas": posição calculada por frame para ter profundidade real
   // (planetas passam atrás do Sol e encolhem quando estão longe).
   const TILT = 0.36;
@@ -354,7 +354,7 @@
     }
   }
   // ---------- apoiadores (boosters e VIPs) ----------
-  const cleanRole = r => String(r || '').replace(/^\s*【\s*(.*?)\s*】\s*/, '$1 ').replace(/^[\s—–\-•·|┊]+|[\s—–\-•·|┊]+$/g, '').trim();
+  const cleanRole = r => String(r || '').replace(/^\s*【\s*(.*?)\s*】\s*/, '$1 ').replace(/^[\s—–\-•·|┊╴╶─]+|[\s—–\-•·|┊╴╶─]+$/g, '').trim();
   function personCard(p, extra) {
     const n = String(p.name || '?'), first = (Array.from(n.trim())[0] || '?').toUpperCase();
     return `<div class="person"><span class="avatar sm" style="--h:${(n.length * 47 + 200) % 360}">${esc(first)}${p.avatar ? `<img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><b>${esc(n)}</b>${extra ? `<small>${esc(extra)}</small>` : ''}${badges(p)}</div>`;
