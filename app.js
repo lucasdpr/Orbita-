@@ -92,45 +92,67 @@
 
 
   // ---------- sistema solar ----------
-  const PLANETS = [
-    { n: 'Mercúrio', c: '#b9a89a', s: 18, d: 14, info: 'Primeira parada da jornada. Call mais próxima do Sol, sempre movimentada.' },
-    { n: 'Vênus', c: '#ffb86b', s: 22, d: 20, info: 'Call de papo e bagunça. Quase sempre tem alguém por lá!' },
-    { n: 'Terra', c: '#4f9dff', s: 24, d: 27, info: 'Nosso lar. Conversa tranquila e de todo tipo.' },
-    { n: 'Marte', c: '#ff6a4f', s: 20, d: 34, info: 'Para quem quer jogar e competir.' },
-    { n: 'Júpiter', c: '#e0a97a', s: 34, d: 42, info: 'O gigante. Perfeito para grupos grandes.' },
-    { n: 'Saturno', c: '#ffd98a', s: 30, d: 50, info: 'Calls com música e clima de relax.' },
-    { n: 'Urano', c: '#7fe8e8', s: 26, d: 57, info: 'Papo mais esquisito, às vezes até com tema.' },
-    { n: 'Netuno', c: '#4f6dff', s: 26, d: 64, info: 'Última fronteira. Silêncio e sossego.' }
-  ];
+  // planetas: visual pelo nome; texto = curiosidade astronômica (verdadeira); nomes e limites reais vêm do Discord
+  const LOOK = { mercurio: ['#b9a89a', 18], venus: ['#ffb86b', 22], terra: ['#4f9dff', 24], marte: ['#ff6a4f', 20], jupiter: ['#e0a97a', 34], saturno: ['#ffd98a', 30], urano: ['#7fe8e8', 26], netuno: ['#4f6dff', 26], plutao: ['#c9b8a6', 16] };
+  const FACTS = {
+    mercurio: 'O planeta mais perto do Sol e o mais rápido: dá uma volta completa em 88 dias.',
+    venus: 'O planeta mais quente do sistema solar, mesmo não sendo o mais próximo do Sol.',
+    terra: 'Nosso lar: o único planeta conhecido com vida (e com a Órbita).',
+    marte: 'O planeta vermelho, onde fica o maior vulcão do sistema solar.',
+    jupiter: 'O gigante: caberiam mais de 1.300 Terras dentro dele.',
+    saturno: 'Famoso pelos anéis, feitos de gelo e pedaços de rocha.',
+    urano: 'Gira praticamente deitado, com o eixo quase paralelo à própria órbita.',
+    netuno: 'O mais distante do Sol, com os ventos mais fortes do sistema solar.',
+    plutao: 'Hoje é um planeta-anão, mas aqui na Órbita continua com o seu lugar.'
+  };
+  const PALETTE = ['#b86bff', '#ff8ad8', '#6bd6ff', '#9dff8a', '#ffd36b'];
+  const pkey = n => String(n).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]/g, '');
   // Órbitas elípticas "inclinadas": posição calculada por frame para ter profundidade real
   // (planetas passam atrás do Sol e encolhem quando estão longe).
   const TILT = 0.36;
   const solar = $('#solar'), info = $('#solarInfo'), list = $('#planetList');
-  let selected = -1, hovering = false;
-  const bodies = PLANETS.map((p, i) => {
-    const o = document.createElement('div'); o.className = 'orbit';
-    o.style.width = `${p.d * 1.36}%`; o.style.height = `${p.d * 1.36 * TILT * 1.55}%`;
-    solar.appendChild(o);
-    const b = document.createElement('button');
-    b.className = 'pl' + (p.n === 'Saturno' ? ' ringed' : '') + (p.n === 'Júpiter' ? ' banded' : '');
-    b.setAttribute('aria-label', p.n);
-    b.style.setProperty('--c', p.c); b.style.setProperty('--s', p.s * 1.25 + 'px');
-    b.innerHTML = `<i></i><span class="pl-name">${esc(p.n)}</span>`;
-    b.addEventListener('click', () => select(i));
-    solar.appendChild(b);
-    const li = document.createElement('li');
-    li.innerHTML = `<button style="--c:${p.c}"><i></i>${esc(p.n)}<small>0${i + 1}</small></button>`;
-    li.firstChild.addEventListener('click', () => select(i));
-    list.appendChild(li);
-    return { p, b, li, a: i * 2.1 + 0.6, v: 0.32 / (1 + i * 0.55) };
-  });
+  let selected = -1, hovering = false, PLANETS = [], bodies = [];
+  function buildSolar(items) {
+    solar.querySelectorAll('.orbit, .pl').forEach(e => e.remove()); list.innerHTML = '';
+    const N = items.length;
+    PLANETS = items.map((it, i) => {
+      const key = pkey(it.name), look = LOOK[key] || [PALETTE[i % PALETTE.length], 22];
+      return { n: it.name, key, c: look[0], s: look[1], limit: it.limit, d: N > 1 ? 14 + i * (50 / (N - 1)) : 40 };
+    });
+    bodies = PLANETS.map((p, i) => {
+      const o = document.createElement('div'); o.className = 'orbit';
+      o.style.width = `${p.d * 1.36}%`; o.style.height = `${p.d * 1.36 * TILT * 1.55}%`;
+      solar.appendChild(o);
+      const b = document.createElement('button');
+      b.className = 'pl' + (p.key === 'saturno' ? ' ringed' : '') + (p.key === 'jupiter' ? ' banded' : '');
+      b.setAttribute('aria-label', p.n);
+      b.style.setProperty('--c', p.c); b.style.setProperty('--s', p.s * 1.25 + 'px');
+      b.innerHTML = `<i></i><span class="pl-name">${esc(p.n)}</span>`;
+      b.addEventListener('click', () => select(i));
+      solar.appendChild(b);
+      const li = document.createElement('li');
+      li.innerHTML = `<button style="--c:${p.c}"><i></i>${esc(p.n)}<small>${String(i + 1).padStart(2, '0')}</small></button>`;
+      li.firstChild.addEventListener('click', () => select(i));
+      list.appendChild(li);
+      return { p, b, li, a: i * 2.1 + 0.6, v: 0.32 / (1 + i * 0.55) };
+    });
+    selected = -1;
+  }
   function select(i) {
     selected = i;
     bodies.forEach((x, j) => { x.b.classList.toggle('active', i === j); x.li.classList.toggle('on', i === j); });
-    const p = PLANETS[i];
+    const p = PLANETS[i], num = String(i + 1).padStart(2, '0');
     info.style.setProperty('--c', p.c);
-    info.innerHTML = `<span class="si-label">Destino 0${i + 1} · Sala de voz</span><h3>${esc(p.n)}</h3><p>${esc(p.info)}</p><div class="si-meta"><span>🔊 até 10 pessoas</span><span>🛰️ órbita ${i + 1}</span></div>`;
+    info.innerHTML = `<span class="si-label">Destino ${num} · Sala de voz</span><h3>${esc(p.n)}</h3><p>${esc(FACTS[p.key] || 'Uma das salas de voz da Órbita. Chega mais!')}</p><div class="si-meta"><span>🔊 ${p.limit ? 'até ' + p.limit + ' pessoas' : 'sem limite de pessoas'}</span><span>🛰️ órbita ${i + 1}</span></div>`;
   }
+  function renderMoons(moons, planetLimit) {
+    const box = $('#moons'); if (!box || !moons.length) return;
+    const icon = n => /nova/i.test(n) ? '🌑' : /minguante/i.test(n) ? '🌘' : /crescente/i.test(n) ? '🌒' : /cheia/i.test(n) ? '🌕' : '🌙';
+    const lims = [...new Set(moons.map(m => m.limit).filter(Boolean))];
+    box.innerHTML = moons.map(m => `<span>${icon(m.name)} ${esc(m.name)}</span>`).join('') +
+      `<em>${lims.length === 1 ? `As luas são salas menores (até ${lims[0]} pessoas) para papo reservado.` : 'As luas são salas menores para papo reservado.'}${planetLimit ? ` Cada planeta comporta até ${planetLimit}.` : ''}</em>`;
+  }
+  buildSolar(['Mercúrio', 'Vênus', 'Terra', 'Marte', 'Júpiter', 'Saturno', 'Urano', 'Netuno'].map(name => ({ name, limit: 10 })));
   solar.addEventListener('pointerenter', () => hovering = true);
   solar.addEventListener('pointerleave', () => hovering = false);
   let last = performance.now();
@@ -243,12 +265,20 @@
       return `<article class="card glow ev reveal in ${t && ms <= 0 && !e.live ? 'past' : ''} ${e.live ? 'live' : ''}">${e.image ? `<img class="ev-cover" src="${esc(e.image)}" alt="" loading="lazy">` : ''}<span class="tag">${esc(e.tag)}</span>${e.emoji ? `<div class="ev-ico">${esc(e.emoji)}</div>` : ''}<h3>${esc(e.title)}</h3><div class="date">${esc(t ? fmt.format(t) : (e.when || 'Em breve'))}</div>${e.location ? `<div class="ev-loc">📍 ${esc(e.location)}</div>` : ''}<p>${esc(short)}</p><div class="count">${e.live ? '🔴 Acontecendo agora' : t ? countdown(ms) : '⏳ Data a confirmar'}${extra}</div>${e.url ? `<a class="ev-link" href="${esc(e.url)}" target="_blank" rel="noopener">Ver no Discord →</a>` : ''}</article>`;
     }).join('') : '<div class="events-empty"><span class="ico">🔭</span><div><b>Nenhum evento agendado agora</b>Os próximos são anunciados no <code>#eventos</code> do Discord.</div></div>';
   }
-  $('#pastEvents').innerHTML = [...(D.past || [])].sort((x, y) => (x.sort || '9999').localeCompare(y.sort || '9999')).map(e => `<article class="card glow ev done reveal in"><span class="tag">${esc(e.tag)}</span><div class="ev-ico">${esc(e.emoji)}</div><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p>${e.winner ? `<div class="winner"><span class="trophy">🏆</span><div><small>Vencedor</small><b>${esc(e.winner)}</b></div></div>` : ''}<div class="count">✓ ${esc(e.when || "Data a confirmar")}</div></article>`).join('');
+  // acha a foto da pessoa sem ligar para maiúsculas/acentos ("Fim de festa" = "fim de festa")
+  const personIn = (people, name) => { if (!name) return null; if (people[name]) return people[name]; const k = pkey(name); const hit = Object.keys(people).find(n => pkey(n) === k); return hit ? people[hit] : null; };
+  function renderPast(people = {}) {
+    $('#pastEvents').innerHTML = [...(D.past || [])].sort((x, y) => (x.sort || '9999').localeCompare(y.sort || '9999')).map(e => {
+      const p = personIn(people, e.winner);
+      return `<article class="card glow ev done reveal in"><span class="tag">${esc(e.tag)}</span><div class="ev-ico">${esc(e.emoji)}</div><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p>${e.winner ? `<div class="winner">${p ? `<img class="win-av" src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<span class="trophy">🏆</span><div><small>Vencedor</small><b>${esc(e.winner)}</b></div></div>` : ''}<div class="count">✓ ${esc(e.when || 'Data a confirmar')}</div></article>`;
+    }).join('');
+  }
+  renderPast();
   fBox.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; renderEvents(); } });
   renderEvents(); setInterval(renderEvents, 60000);
 
   // ---------- mapa de canais ----------
-  const CATS = [
+  let CATS = [
     { n: 'Interação', d: 'Mostre sua vida, seus pets e sua arte.', c: [['📸 insta-selfies', 'Selfies'], ['🐶 insta-pets', 'Pets'], ['🎮 insta-gamer', 'Prints e jogatinas'], ['🌳 paisagem', 'Fotos de paisagens'], ['🎨 artes', 'Desenhos e criações']] },
     { n: 'Comunicação', d: 'O dia a dia da comunidade.', c: [['💬 bate-papo', 'Papo geral'], ['📷 mídia-geral', 'Imagens e vídeos'], ['🤓 nerdice', 'Assuntos nerds'], ['💩 shitposts', 'Caos controlado'], ['⚙️ comandos', 'Bots e comandos']] },
     { n: 'Joguinhos', d: 'Onde o Mudae acontece.', c: [['👑 lord', 'Jogo de bot'], ['🎲 mudae', 'Rolls e claims'], ['🎲 mudae-trade', 'Trocas de personagens']] },
@@ -261,12 +291,60 @@
     const c = CATS[i];
     panel.innerHTML = `<p>${esc(c.d)}</p><ul>${c.c.map(([n, s]) => `<li>${esc(n)}<small>${esc(s)}</small></li>`).join('')}</ul>`;
   }
-  tabs.innerHTML = CATS.map((c, i) => `<button class="chip" role="tab" data-i="${i}">${esc(c.n)}</button>`).join('');
+  function renderCats() { tabs.innerHTML = CATS.map((c, i) => `<button class="chip" role="tab" data-i="${i}">${esc(c.n)}</button>`).join(''); showCat(0); }
+  function setCats(map) {   // canais reais do Discord (mantém a frase de cada categoria quando o nome bate)
+    const oldD = Object.fromEntries(CATS.map(c => [pkey(c.n), c.d]));
+    CATS = map.map(c => ({ n: c.name, d: oldD[pkey(c.name)] || `${c.channels.length} canais nesta categoria.`,
+      c: c.channels.map(ch => [ch.name, ch.topic || (ch.voice ? 'Sala de voz' + (ch.limit ? ` · até ${ch.limit} pessoas` : '') : 'Canal de texto')]) }));
+    renderCats();
+  }
   tabs.addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) showCat(+b.dataset.i); });
-  showCat(0);
+  renderCats();
 
   // ---------- hall da fama ----------
-  $('#hallList').innerHTML = D.hall.map(h => `<div class="card"><div class="em">${esc(h.emoji)}</div><h3>${esc(h.name)}</h3><small>${esc(h.role)}</small></div>`).join('');
+  function renderHall(people = {}) {
+    $('#hallList').innerHTML = D.hall.map(h => {
+      const p = personIn(people, h.name);
+      const face = p ? `<div class="hall-av"><span class="hall-em">${esc(h.emoji)}</span><img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()"><span class="hall-badge">${esc(h.emoji)}</span></div>` : `<div class="em">${esc(h.emoji)}</div>`;
+      return `<div class="card glow">${face}<h3>${esc(h.name)}</h3><small>${esc(h.role)}</small></div>`;
+    }).join('');
+  }
+  renderHall();
+  // ---------- servidor (banner, números, emojis) ----------
+  const monthLong = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' });
+  const monthShort = new Intl.DateTimeFormat('pt-BR', { month: 'short', year: 'numeric' });
+  function renderServer(s) {
+    const box = $('#srv'), wall = $('#emojiWall');
+    if (box) {
+      const facts = [
+        s.since ? `🗓️ No ar desde ${monthLong.format(new Date(s.since))}` : null,
+        s.boosts ? `🚀 ${s.boosts} impulso${s.boosts === 1 ? '' : 's'}${s.tier ? ` · nível ${s.tier}` : ''}` : null,
+        s.textChannels ? `💬 ${s.textChannels} canais de texto` : null,
+        s.voiceChannels ? `🔊 ${s.voiceChannels} salas de voz` : null,
+        s.emojiCount ? `😺 ${s.emojiCount} emojis próprios` : null
+      ].filter(Boolean);
+      box.innerHTML = (s.banner ? `<div class="srv-banner"><img src="${esc(s.banner)}" alt="Banner do servidor Órbita" loading="lazy" onerror="this.parentNode.remove()">${s.icon ? `<img class="srv-icon" src="${esc(s.icon)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</div>` : '') +
+        (s.description ? `<p class="srv-desc">“${esc(s.description)}”</p>` : '') +
+        `<div class="srv-facts">${facts.map(f => `<span>${esc(f)}</span>`).join('')}</div>`;
+      box.hidden = !(s.banner || s.description || facts.length);
+    }
+    if (wall && s.emojis && s.emojis.length) {
+      wall.innerHTML = `<h3 class="past-title">Emojis da casa</h3><div class="emoji-grid">${s.emojis.map(e => `<img src="${esc(e.url)}" alt=":${esc(e.name)}:" title=":${esc(e.name)}:" loading="lazy" width="40" height="40">`).join('')}</div>`;
+      wall.hidden = false;
+    }
+  }
+  // ---------- apoiadores (boosters e VIPs) ----------
+  const cleanRole = r => String(r || '').replace(/^\s*【\s*(.*?)\s*】\s*/, '$1 ').trim();
+  function personCard(p, extra) {
+    const n = String(p.name || '?'), first = (Array.from(n.trim())[0] || '?').toUpperCase();
+    return `<div class="person"><span class="avatar sm" style="--h:${(n.length * 47 + 200) % 360}">${esc(first)}${p.avatar ? `<img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><b>${esc(n)}</b>${extra ? `<small>${esc(extra)}</small>` : ''}</div>`;
+  }
+  function renderSupporters(boosters, vips) {
+    const sec = $('#apoiadores'); if (!sec) return;
+    if (boosters.length) { $('#boosters').innerHTML = boosters.map(b => personCard(b, b.since ? 'desde ' + monthShort.format(new Date(b.since)) : '')).join(''); $('#boostWrap').hidden = false; }
+    if (vips.length) { $('#vips').innerHTML = vips.map(v => personCard(v, cleanRole(v.role))).join(''); $('#vipWrap').hidden = false; }
+    sec.hidden = !(boosters.length || vips.length);
+  }
   // ---------- staff ----------
   function renderStaff(list, shown) {
     $('#staffList').innerHTML = list.map((s, i) => {
@@ -713,6 +791,11 @@
     const m = String(D.invite || '').match(/discord\.gg\/([\w-]+)/);
     const inviteApi = m ? 'https://discord.com/api/v10/invites/' + m[1] + '?with_counts=true' : null;
     let useApi = location.protocol.startsWith('http'), lastEv = '', lastStaff = '';
+    // nomes que aparecem no site (Hall da Fama e vencedores) para buscar a foto de cada um
+    const NAMES = [...new Set([...(D.hall || []).map(h => h.name), ...(D.past || []).map(e => e.winner)].filter(Boolean))];
+    const API_URL = '/api/discord' + (NAMES.length ? '?names=' + encodeURIComponent(NAMES.join(',')) : '');
+    const changed = (k, v) => { const s = JSON.stringify(v); if (s === k.v) return false; k.v = s; return true; };
+    const seen = { people: {}, srv: {}, map: {}, pl: {}, sup: {} };
     function apply(j) {
       if (Number.isFinite(j.members) && j.members > 0) {
         show(j.members);
@@ -724,10 +807,19 @@
       if (Array.isArray(j.staff) && j.staff.length) {
         const k = JSON.stringify(j.staff); if (k !== lastStaff) { lastStaff = k; renderStaff(j.staff, true); }
       }
+      if (j.people && changed(seen.people, j.people)) { renderHall(j.people); renderPast(j.people); }
+      if (j.server && changed(seen.srv, j.server)) renderServer(j.server);
+      if (Array.isArray(j.map) && j.map.length && changed(seen.map, j.map)) setCats(j.map);
+      if (Array.isArray(j.planets) && changed(seen.pl, j.planets)) {
+        const pl = j.planets.filter(p => !p.moon), moons = j.planets.filter(p => p.moon);
+        if (pl.length >= 2) buildSolar(pl);
+        renderMoons(moons, pl.length ? pl[0].limit : 0);
+      }
+      if ((j.boosters || j.vips) && changed(seen.sup, [j.boosters, j.vips])) renderSupporters(j.boosters || [], j.vips || []);
     }
     async function fromApi(signal) {
       try {
-        const r = await fetch('/api/discord', { signal });
+        const r = await fetch(API_URL, { signal });
         if (r.status === 503 || r.status === 404) { useApi = false; return false; }   // bot ainda não configurado
         if (!r.ok) return false;
         const j = await r.json(); if (!j || !j.ok) return false;

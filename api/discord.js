@@ -1,16 +1,19 @@
 // Função do Vercel: lê dados do servidor da Órbita com o bot e devolve ao site só o necessário.
 // Segredo: DISCORD_BOT_TOKEN (variável de ambiente no painel do Vercel). Ele nunca vai para o navegador.
-// IDs não são segredo: ficam aqui (ou podem vir das variáveis DISCORD_GUILD_ID / DISCORD_STAFF_ROLE_IDS).
+// Sem DISCORD_GUILD_ID / DISCORD_STAFF_ROLE_IDS, descobre sozinha o servidor do bot e os cargos de staff.
+// Privacidade: só saem dados já públicos dentro do servidor (staff, boosters, nomes pedidos pelo site, canais das
+// categorias liberadas abaixo). Canais de outras categorias (staff, privados) nunca saem daqui.
 
-// Se as variáveis não existirem, a função descobre sozinha: o servidor onde o bot está e os cargos cujo nome
-// parece de staff (Staff, Moderação, Administração, Equipe, Suporte...).
 const ENV_GUILD_ID = process.env.DISCORD_GUILD_ID || '';
 const ENV_STAFF_ROLE_IDS = (process.env.DISCORD_STAFF_ROLE_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
+// categorias mostradas no "Mapa da Galáxia" (comparadas sem acento, emoji ou símbolo)
+const MAP_CATEGORIES = (process.env.DISCORD_MAP_CATEGORIES || 'interacao,comunicacao,joguinhos,musicas,premium').split(',').map(s => s.trim()).filter(Boolean);
 const STAFF_NAME = /staff|moder|admin|equipe|suporte|ajudante|helper|\bmods?\b/i;
-let GUILD_ID = ENV_GUILD_ID;          // fica guardado entre chamadas enquanto a função estiver "quente"
-
+const VIP_NAME = /vip/i;   // cargos de VIP (ex.: "【👑】VIP")
 const API = 'https://discord.com/api/v10';
+const CDN = 'https://cdn.discordapp.com';
 const MEMBERS_CHANNEL = /membros?\s*[:：\-–]\s*([\d][\d.,\s]*)/i;   // ex.: "Membros: 1300" / "Membros: 1.300"
+let GUILD_ID = ENV_GUILD_ID;          // fica guardado entre chamadas enquanto a função estiver "quente"
 
 async function dc(path, token) {
   const r = await fetch(API + path, {
@@ -20,13 +23,23 @@ async function dc(path, token) {
   return r.json();
 }
 
+// "【☄️】Administração" / "𝕾𝖙𝖆𝖓" / "—INTERAÇÃO—" -> "administracao" / "stan" / "interacao"
+const norm = s => String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+// "—✦SISTEMA_SOLAR✦—" -> "Sistema solar";  "⚫╭mercúrio" -> "Mercúrio"
+const pretty = s => {
+  const t = String(s || '').replace(/_/g, ' ').replace(/[^\p{L}\p{N}\s'-]/gu, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  return t ? t.charAt(0).toUpperCase() + t.slice(1) : '';
+};
+const since = id => new Date(Number((BigInt(id) >> 22n) + 1420070400000n)).toISOString();
+
 function avatarOf(member, guildId) {
   const u = member.user;
-  if (member.avatar) return `https://cdn.discordapp.com/guilds/${guildId}/users/${u.id}/avatars/${member.avatar}.png?size=128`;
-  if (u.avatar) return `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=128`;
+  if (member.avatar) return `${CDN}/guilds/${guildId}/users/${u.id}/avatars/${member.avatar}.png?size=128`;
+  if (u.avatar) return `${CDN}/avatars/${u.id}/${u.avatar}.png?size=128`;
   const idx = u.discriminator && u.discriminator !== '0' ? Number(u.discriminator) % 5 : Number((BigInt(u.id) >> 22n) % 6n);
-  return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
+  return `${CDN}/embed/avatars/${idx}.png`;
 }
+const displayName = m => m.nick || m.user.global_name || m.user.username;
 
 function staffRoles(roles) {
   if (ENV_STAFF_ROLE_IDS.length) return roles.filter(r => ENV_STAFF_ROLE_IDS.includes(r.id));
@@ -42,25 +55,48 @@ async function resolveGuild(token) {
   return GUILD_ID;
 }
 
-async function staffList(token, roles) {
-  const chosen = staffRoles(roles);
-  if (!chosen.length) return [];
-  const pos = new Map(roles.map(r => [r.id, r]));
-  const wanted = new Set(chosen.map(r => r.id));
-  const found = [];
-  let after = '0';
+async function allMembers(token) {
+  const out = []; let after = '0';
   for (let page = 0; page < 10; page++) {             // até 10.000 membros
     const batch = await dc(`/guilds/${GUILD_ID}/members?limit=1000&after=${after}`, token);
-    for (const m of batch) {
-      if (m.user.bot) continue;
-      const mine = m.roles.filter(id => wanted.has(id)).map(id => pos.get(id)).filter(Boolean).sort((a, b) => b.position - a.position);
-      if (!mine.length) continue;
-      found.push({ name: m.nick || m.user.global_name || m.user.username, avatar: avatarOf(m, GUILD_ID), role: mine[0].name, _p: mine[0].position });
-    }
+    out.push(...batch);
     if (batch.length < 1000) break;
     after = batch[batch.length - 1].user.id;
   }
-  return found.sort((a, b) => b._p - a._p || a.name.localeCompare(b.name, 'pt-BR')).map(({ _p, ...s }) => s);
+  return out.filter(m => !m.user.bot);
+}
+
+function vipRoles(roles) { return roles.filter(r => !r.managed && r.id !== GUILD_ID && VIP_NAME.test(r.name || '')); }
+
+function staffFrom(members, roles, chosen = staffRoles(roles)) {
+  if (!chosen.length) return [];
+  const byId = new Map(roles.map(r => [r.id, r])), wanted = new Set(chosen.map(r => r.id));
+  return members.map(m => {
+    const mine = m.roles.filter(id => wanted.has(id)).map(id => byId.get(id)).filter(Boolean).sort((a, b) => b.position - a.position);
+    return mine.length ? { name: displayName(m), avatar: avatarOf(m, GUILD_ID), role: mine[0].name, _p: mine[0].position } : null;
+  }).filter(Boolean).sort((a, b) => b._p - a._p || a.name.localeCompare(b.name, 'pt-BR')).map(({ _p, ...s }) => s);
+}
+
+// acha a pessoa pelo nome que aparece no site (apelido, nome global ou usuário); exato > começa com > contém
+function findPerson(members, q) {
+  const nq = norm(q); if (!nq) return null;
+  let best = null, score = 0;
+  for (const m of members) {
+    for (const f of [m.nick, m.user.global_name, m.user.username]) {
+      const nf = norm(f); if (!nf) continue;
+      const s = nf === nq ? 3 : nf.startsWith(nq) ? 2 : nf.includes(nq) ? 1 : 0;
+      if (s > score) { score = s; best = m; }
+    }
+    if (score === 3) break;
+  }
+  return best ? { name: displayName(best), avatar: avatarOf(best, GUILD_ID) } : null;
+}
+
+function readNames(req) {
+  try {
+    const raw = new URL(req.url || '/', 'http://x').searchParams.get('names') || '';
+    return [...new Set(raw.split(',').map(s => s.trim().slice(0, 40)).filter(Boolean))].slice(0, 20);
+  } catch (e) { return []; }
 }
 
 module.exports = async (req, res) => {
@@ -84,17 +120,50 @@ module.exports = async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     return res.status(502).json({ ok: false, error: guild.reason.message });
   }
-  const out = { ok: true, updatedAt: new Date().toISOString(), name: guild.value.name, problems: [] };
+  const g = guild.value;
+  const out = { ok: true, updatedAt: new Date().toISOString(), name: g.name, problems: [] };
   const chans = channels.status === 'fulfilled' ? channels.value : [];
   if (channels.status === 'rejected') out.problems.push(channels.reason.message);
 
-  // membros: o número do canal "Membros: X" (igual ao que o servidor mostra); senão, a contagem aproximada
+  // ---- membros: o número do canal "Membros: X" (igual ao servidor); senão, a contagem aproximada
   const statCh = chans.find(c => MEMBERS_CHANNEL.test(c.name || ''));
   const fromChannel = statCh ? parseInt(statCh.name.match(MEMBERS_CHANNEL)[1].replace(/\D/g, ''), 10) : NaN;
-  out.members = Number.isFinite(fromChannel) && fromChannel > 0 ? fromChannel : guild.value.approximate_member_count;
+  out.members = Number.isFinite(fromChannel) && fromChannel > 0 ? fromChannel : g.approximate_member_count;
   out.membersSource = Number.isFinite(fromChannel) && fromChannel > 0 ? 'canal' : 'aproximado';
 
-  // eventos agendados no Discord (agendados ou acontecendo agora)
+  // ---- dados do servidor
+  const emojis = (g.emojis || []).filter(e => e.available !== false && e.id);
+  out.server = {
+    icon: g.icon ? `${CDN}/icons/${GUILD_ID}/${g.icon}.${g.icon.startsWith('a_') ? 'gif' : 'png'}?size=256` : null,
+    banner: g.banner ? `${CDN}/banners/${GUILD_ID}/${g.banner}.${g.banner.startsWith('a_') ? 'gif' : 'png'}?size=1024` : null,
+    description: g.description || null,
+    since: since(GUILD_ID),
+    boosts: g.premium_subscription_count || 0,
+    tier: g.premium_tier || 0,
+    emojiCount: emojis.length,
+    emojis: emojis.slice(0, 60).map(e => ({ name: e.name, url: `${CDN}/emojis/${e.id}.${e.animated ? 'gif' : 'png'}?size=64` })),
+    textChannels: chans.filter(c => c.type === 0 || c.type === 5 || c.type === 15).length,
+    voiceChannels: chans.filter(c => c.type === 2 || c.type === 13).length
+  };
+
+  // ---- mapa (só categorias liberadas) e sistema solar (calls da categoria "sistema solar")
+  const cats = chans.filter(c => c.type === 4).sort((a, b) => a.position - b.position);
+  const kids = id => chans.filter(c => c.parent_id === id && c.type !== 4).sort((a, b) => (a.type === 2) - (b.type === 2) || a.position - b.position);
+  out.map = cats.filter(c => MAP_CATEGORIES.some(k => norm(c.name).includes(k))).map(c => ({
+    name: pretty(c.name),
+    channels: kids(c.id).map(ch => ({
+      name: ch.name, voice: ch.type === 2 || ch.type === 13, limit: ch.user_limit || 0,
+      topic: ch.topic ? String(ch.topic).replace(/\s+/g, ' ').slice(0, 140) : null
+    }))
+  })).filter(c => c.channels.length);
+  const solarCat = cats.find(c => norm(c.name).includes('sistema') && norm(c.name).includes('solar'));
+  if (solarCat) {
+    out.planets = kids(solarCat.id).filter(ch => ch.type === 2 && !/afk/i.test(ch.name)).map(ch => ({
+      name: pretty(ch.name), limit: ch.user_limit || 0, moon: /\blua\b/i.test(pretty(ch.name))
+    }));
+  }
+
+  // ---- eventos agendados no Discord (agendados ou acontecendo agora)
   const chName = id => { const c = chans.find(x => x.id === id); return c ? c.name : null; };
   if (events.status === 'fulfilled') {
     out.events = events.value.filter(e => e.status === 1 || e.status === 2).map(e => ({
@@ -106,16 +175,25 @@ module.exports = async (req, res) => {
       interested: typeof e.user_count === 'number' ? e.user_count : null,
       tag: e.entity_type === 3 ? 'Fora do Discord' : e.entity_type === 1 ? 'Palco' : 'Call',
       location: e.entity_type === 3 ? (e.entity_metadata && e.entity_metadata.location) || null : chName(e.channel_id),
-      image: e.image ? `https://cdn.discordapp.com/guild-events/${e.id}/${e.image}.png?size=600` : null,
+      image: e.image ? `${CDN}/guild-events/${e.id}/${e.image}.png?size=600` : null,
       url: `https://discord.com/events/${GUILD_ID}/${e.id}`
     })).sort((a, b) => new Date(a.date) - new Date(b.date));
   } else out.problems.push(events.reason.message);
 
-  // staff pelos cargos
+  // ---- pessoas: staff pelos cargos, boosters e os nomes que o site pediu (Hall da Fama, vencedores)
   if (roles.status === 'fulfilled') {
     out.staffRoles = staffRoles(roles.value).map(r => r.name);
-    try { out.staff = await staffList(token, roles.value); }
-    catch (e) { out.problems.push(e.message + (e.status === 403 ? ' (ative o Server Members Intent no portal do bot)' : '')); }
+    try {
+      const members = await allMembers(token);
+      out.staff = staffFrom(members, roles.value);
+      const vr = vipRoles(roles.value);
+      out.vipRoles = vr.map(r => r.name);
+      out.vips = staffFrom(members, roles.value, vr).slice(0, 100);
+      out.boosters = members.filter(m => m.premium_since).sort((a, b) => new Date(a.premium_since) - new Date(b.premium_since))
+        .slice(0, 60).map(m => ({ name: displayName(m), avatar: avatarOf(m, GUILD_ID), since: m.premium_since }));
+      const names = readNames(req);
+      if (names.length) { out.people = {}; for (const q of names) { const p = findPerson(members, q); if (p) out.people[q] = p; } }
+    } catch (e) { out.problems.push(e.message + (e.status === 403 ? ' (ative o Server Members Intent no portal do bot)' : '')); }
   } else out.problems.push(roles.reason.message);
 
   // navegador não guarda (max-age=0); a CDN guarda 60 s. Com problema, guarda só 10 s para a correção aparecer logo.
