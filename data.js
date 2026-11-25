@@ -7,6 +7,8 @@ window.ORBITA = {
   // Som tocado quando a pessoa clica em "Entrar" na tela de boas-vindas (troque o arquivo em assets/ se quiser).
   welcomeSound: "assets/bem-vindo.m4a",
   invite: "https://discord.gg/aD2ArYSsm4",
+  // Meta de impulsos mostrada na barra de "Apoiadores" (a contagem atual vem do Discord). Atualize quando a meta mudar.
+  boostGoal: 33,
   members: 1300,
 
   // Música de fundo: trilha original da Órbita (arquivo próprio, em loop). volume de 0 a 1.

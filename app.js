@@ -277,10 +277,19 @@
   const badges = p => p && (p.level || p.joined) ? `<div class="lvl-row">${lvlBadge(p.level)}${daysBadge(p.joined)}</div>` : '';
   // acha a foto da pessoa sem ligar para maiúsculas/acentos ("Fim de festa" = "fim de festa")
   const personIn = (people, name) => { if (!name) return null; if (people[name]) return people[name]; const k = pkey(name); const hit = Object.keys(people).find(n => pkey(n) === k); return hit ? people[hit] : null; };
-  function renderPast(people = {}) {
+  // participantes: cargo do evento no Discord (pelo título, ou pelo campo "role" no data.js)
+  let EVENT_ROLES = [];
+  const partOf = e => {
+    const want = pkey(e.role || e.title); if (!want) return null;
+    const hit = EVENT_ROLES.find(r => { const k = pkey(r.name); return k && (k.includes(want) || want.includes(k)); });
+    return hit ? hit.count : null;
+  };
+  let lastPeople = {};
+  function renderPast(people = lastPeople) {
+    lastPeople = people;
     $('#pastEvents').innerHTML = [...(D.past || [])].sort((x, y) => (x.sort || '9999').localeCompare(y.sort || '9999')).map(e => {
       const p = personIn(people, e.winner);
-      return `<article class="card glow ev done reveal in"><span class="tag">${esc(e.tag)}</span><div class="ev-ico">${esc(e.emoji)}</div><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p>${e.winner ? `<div class="winner">${p ? `<img class="win-av" src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<span class="trophy">🏆</span><div><small>Vencedor</small><b>${esc(e.winner)}</b></div></div>` : ''}<div class="count">✓ ${esc(e.when || 'Data a confirmar')}</div></article>`;
+      return `<article class="card glow ev done reveal in"><span class="tag">${esc(e.tag)}</span><div class="ev-ico">${esc(e.emoji)}</div><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p>${e.winner ? `<div class="winner">${p ? `<img class="win-av" src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}<span class="trophy">🏆</span><div><small>Vencedor</small><b>${esc(e.winner)}</b></div></div>` : ''}${(() => { const n = partOf(e); return n ? `<div class="ev-part">🎟️ ${n} participante${n === 1 ? '' : 's'}</div>` : ''; })()}<div class="count">✓ ${esc(e.when || 'Data a confirmar')}</div></article>`;
     }).join('');
   }
   renderPast();
@@ -324,6 +333,7 @@
   const monthLong = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' });
   const monthShort = new Intl.DateTimeFormat('pt-BR', { month: 'short', year: 'numeric' });
   function renderServer(s) {
+    renderBoostGoal(s);
     const box = $('#srv'), wall = $('#emojiWall');
     if (box) {
       const facts = [
@@ -349,11 +359,21 @@
     const n = String(p.name || '?'), first = (Array.from(n.trim())[0] || '?').toUpperCase();
     return `<div class="person"><span class="avatar sm" style="--h:${(n.length * 47 + 200) % 360}">${esc(first)}${p.avatar ? `<img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><b>${esc(n)}</b>${extra ? `<small>${esc(extra)}</small>` : ''}${badges(p)}</div>`;
   }
+  function renderBoostGoal(s) {
+    const box = $('#boostGoal'), goal = +D.boostGoal || 0;
+    if (!box || !s || !goal) return;
+    const n = s.boosts || 0, pct = Math.min(100, Math.round(n / goal * 100)), left = Math.max(0, goal - n);
+    box.innerHTML = `<div class="bg-top"><b>🚀 Objetivo de impulsos</b><span>${n} / ${goal}</span></div>
+      <div class="bg-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${goal}" aria-valuenow="${n}" aria-label="Impulsos"><i style="width:${pct}%"></i></div>
+      <p>${left ? `Faltam <b>${left}</b> impulso${left === 1 ? '' : 's'} para a meta. Cada impulso desbloqueia vantagens para o servidor inteiro.` : 'Meta batida! 🎉 Obrigado a todo mundo que impulsionou.'}${s.tier ? ` Hoje a Órbita está no <b>nível ${s.tier}</b>.` : ''}</p>
+      <a class="btn small" data-invite href="${esc(D.invite)}" target="_blank" rel="noopener">💎 Impulsionar no Discord</a>`;
+    box.hidden = false; $('#apoiadores').hidden = false;
+  }
   function renderSupporters(boosters, vips) {
     const sec = $('#apoiadores'); if (!sec) return;
     if (boosters.length) { $('#boosters').innerHTML = boosters.map(b => personCard(b, b.since ? 'desde ' + monthShort.format(new Date(b.since)) : '')).join(''); $('#boostWrap').hidden = false; }
     if (vips.length) { $('#vips').innerHTML = vips.map(v => personCard(v, cleanRole(v.role))).join(''); $('#vipWrap').hidden = false; }
-    sec.hidden = !(boosters.length || vips.length);
+    sec.hidden = !(boosters.length || vips.length || !$('#boostGoal').hidden);
   }
   // ---------- staff ----------
   function renderStaff(list, shown) {
@@ -805,7 +825,7 @@
     const NAMES = [...new Set([...(D.hall || []).map(h => h.name), ...(D.past || []).map(e => e.winner)].filter(Boolean))];
     const API_URL = '/api/discord' + (NAMES.length ? '?names=' + encodeURIComponent(NAMES.join(',')) : '');
     const changed = (k, v) => { const s = JSON.stringify(v); if (s === k.v) return false; k.v = s; return true; };
-    const seen = { people: {}, srv: {}, map: {}, pl: {}, sup: {} };
+    const seen = { people: {}, srv: {}, map: {}, pl: {}, sup: {}, ev: {} };
     function apply(j) {
       if (Number.isFinite(j.members) && j.members > 0) {
         show(j.members);
@@ -819,6 +839,7 @@
       }
       if (j.people && changed(seen.people, j.people)) { renderHall(j.people); renderPast(j.people); }
       if (j.server && changed(seen.srv, j.server)) renderServer(j.server);
+      if (Array.isArray(j.eventRoles) && changed(seen.ev, j.eventRoles)) { EVENT_ROLES = j.eventRoles; renderPast(); }
       if (Array.isArray(j.map) && j.map.length && changed(seen.map, j.map)) setCats(j.map);
       if (Array.isArray(j.planets) && changed(seen.pl, j.planets)) {
         const pl = j.planets.filter(p => !p.moon), moons = j.planets.filter(p => p.moon);

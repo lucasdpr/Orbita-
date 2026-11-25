@@ -497,3 +497,14 @@ img.lite-sun{position:absolute;inset:-100%;width:300%;height:300%;max-width:none
 .person .lvl-row{margin-top:4px}
 .person .days .long{display:none}
 .person .lvl-row{flex-direction:column;align-items:center;gap:4px}
+
+/* ---------- participantes e meta de impulsos ---------- */
+.ev-part{font:600 .8rem 'JetBrains Mono',monospace;color:#d9ccff}
+.boost-goal{margin:0 0 30px;padding:24px 26px}
+.bg-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px}
+.bg-top b{font-size:1.1rem}
+.bg-top span{font:700 1.2rem 'Silkscreen',monospace;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bg-bar{height:14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--line);overflow:hidden}
+.bg-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ff7ae0,#b86bff,#6bd6ff);box-shadow:0 0 18px rgba(255,79,216,.6);transition:width 1.2s var(--ease)}
+.boost-goal p{color:var(--muted);margin:14px 0 16px}
+.boost-goal p b{color:var(--text)}

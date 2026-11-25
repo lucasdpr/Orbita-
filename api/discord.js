@@ -84,6 +84,21 @@ async function allMembers(token) {
   return out.filter(m => !m.user.bot);
 }
 
+// cargos de evento: os que ficam logo abaixo do separador "──── Eventos ────" na lista de cargos (até o próximo separador)
+const isSeparator = r => /[—─━–\-]{3,}/.test(r.name || '');
+function eventRoles(roles) {
+  const sorted = [...roles].sort((a, b) => b.position - a.position);
+  const i = sorted.findIndex(r => isSeparator(r) && norm(r.name).includes('evento'));
+  if (i < 0) return [];
+  const out = [];
+  for (let k = i + 1; k < sorted.length; k++) {
+    const r = sorted[k];
+    if (isSeparator(r) || r.managed || r.id === GUILD_ID) break;
+    out.push(r);
+  }
+  return out;
+}
+
 function vipRoles(roles) { return roles.filter(r => !r.managed && r.id !== GUILD_ID && isVipRole(r)); }
 
 function staffFrom(members, roles, chosen = staffRoles(roles)) {
@@ -208,6 +223,11 @@ module.exports = async (req, res) => {
       const vr = vipRoles(roles.value);
       out.vipRoles = vr.map(r => r.name);
       out.vips = staffFrom(members, roles.value, vr).slice(0, 100);
+      out.eventRoles = eventRoles(roles.value).map(r => ({
+        name: String(r.name).replace(/【.*?】/g, '').trim(),
+        emoji: (String(r.name).match(/【\s*(.*?)\s*】/) || [])[1] || '',
+        count: members.filter(m => m.roles.includes(r.id)).length
+      }));
       out.boosters = members.filter(m => m.premium_since).sort((a, b) => new Date(a.premium_since) - new Date(b.premium_since))
         .slice(0, 60).map(m => ({ name: displayName(m), avatar: avatarOf(m, GUILD_ID), since: m.premium_since, level: levelOf(m), joined: m.joined_at || null }));
       const names = readNames(req);
