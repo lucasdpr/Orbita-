@@ -30,6 +30,30 @@ function levelInfo(roles) {
   }
   return m;
 }
+// mural: mensagens do canal "mural" viram recados no site (só texto, sem links, sem bots)
+const LINK_RE = /(https?:\/\/|www\.|discord\.gg|\.com\b|\.gg\b|\.br\b)/i;
+function muralFrom(msgs, byMember, chans) {
+  const nameOf = id => { const m = byMember.get(id); return m ? displayName(m) : null; };
+  return msgs.filter(m => !m.author.bot && (m.type === 0 || m.type === 19) && m.content && !LINK_RE.test(m.content)).slice(0, 24).map(m => {
+    const mem = byMember.get(m.author.id);
+    let text = m.content
+      .replace(/<@!?(\d+)>/g, (_, id) => '@' + (nameOf(id) || 'alguém'))
+      .replace(/<@&\d+>/g, '@cargo')
+      .replace(/<#(\d+)>/g, (_, id) => { const c = chans.find(x => x.id === id); return '#' + (c ? pretty(c.name).toLowerCase() : 'canal'); })
+      .replace(/<a?:(\w+):\d+>/g, ':$1:')
+      .replace(/\|\|[\s\S]*?\|\|/g, '[spoiler]')
+      .replace(/(\*\*|__|~~|`{1,3})/g, '')
+      .trim();
+    if (!text) return null;
+    if (text.length > 280) text = text.slice(0, 277) + '…';
+    return {
+      name: mem ? displayName(mem) : (m.author.global_name || m.author.username),
+      avatar: avatarOf(mem || { user: m.author }, GUILD_ID),
+      level: mem ? levelOf(mem) : null,
+      text, date: m.timestamp
+    };
+  }).filter(Boolean);
+}
 const levelOf = m => m.roles.map(id => LEVELS.get(id)).filter(Boolean).sort((a, b) => b.n - a.n)[0] || null;
 let GUILD_ID = ENV_GUILD_ID;          // fica guardado entre chamadas enquanto a função estiver "quente"
 
@@ -163,6 +187,8 @@ module.exports = async (req, res) => {
   const g = guild.value;
   const out = { ok: true, updatedAt: new Date().toISOString(), name: g.name, problems: [] };
   const chans = channels.status === 'fulfilled' ? channels.value : [];
+  const muralCh = chans.find(c => (c.type === 0 || c.type === 5) && norm(c.name).includes('mural'));
+  const muralP = muralCh ? dc(`/channels/${muralCh.id}/messages?limit=50`, token).catch(e => { out.problems.push(e.message + ' (mural)'); return []; }) : Promise.resolve(null);
   if (channels.status === 'rejected') out.problems.push(channels.reason.message);
 
   // ---- membros: o número do canal "Membros: X" (igual ao servidor); senão, a contagem aproximada
@@ -220,12 +246,14 @@ module.exports = async (req, res) => {
     })).sort((a, b) => new Date(a.date) - new Date(b.date));
   } else out.problems.push(events.reason.message);
 
+  let byMember = new Map();
   // ---- pessoas: staff pelos cargos, boosters e os nomes que o site pediu (Hall da Fama, vencedores)
   if (roles.status === 'fulfilled') {
     out.staffRoles = staffRoles(roles.value).map(r => r.name);
     try {
       LEVELS = levelInfo(roles.value);
       const members = await allMembers(token);
+      byMember = new Map(members.map(m => [m.user.id, m]));
       out.staff = staffFrom(members, roles.value);
       const vr = vipRoles(roles.value);
       out.vipRoles = vr.map(r => r.name);
@@ -241,6 +269,14 @@ module.exports = async (req, res) => {
       if (names.length) { out.people = {}; for (const q of names) { const p = findPerson(members, q); if (p) out.people[q] = p; } }
     } catch (e) { out.problems.push(e.message + (e.status === 403 ? ' (ative o Server Members Intent no portal do bot)' : '')); }
   } else out.problems.push(roles.reason.message);
+
+  // ---- mural
+  const muralMsgs = await muralP;
+  if (muralCh && Array.isArray(muralMsgs)) {
+    out.mural = { name: muralCh.name, url: `https://discord.com/channels/${GUILD_ID}/${muralCh.id}`, messages: muralFrom(muralMsgs, byMember, chans) };
+    const hidden = muralMsgs.filter(m => !m.author.bot && !m.content && !(m.attachments || []).length && !(m.embeds || []).length).length;
+    if (hidden) out.problems.push('o texto das mensagens do mural veio vazio: ative a "Intenção de conteúdo da mensagem" no portal do bot');
+  }
 
   // navegador não guarda (max-age=0); a CDN guarda 60 s. Com problema, guarda só 10 s para a correção aparecer logo.
   res.setHeader('Cache-Control', out.problems.length ? 'public, max-age=0, s-maxage=10, stale-while-revalidate=10' : 'public, max-age=0, s-maxage=60, stale-while-revalidate=120');
