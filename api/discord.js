@@ -31,10 +31,12 @@ function levelInfo(roles) {
   return m;
 }
 // mural: mensagens do canal "mural" viram recados no site (só texto, sem links, sem bots)
+// quantos recados aparecem no site (os mais recentes)
+const MURAL_MAX = 10;
 const LINK_RE = /(https?:\/\/|www\.|discord\.gg|\.com\b|\.gg\b|\.br\b)/i;
 function muralFrom(msgs, byMember, chans) {
   const nameOf = id => { const m = byMember.get(id); return m ? displayName(m) : null; };
-  return msgs.filter(m => !m.author.bot && (m.type === 0 || m.type === 19) && m.content && !LINK_RE.test(m.content)).slice(0, 24).map(m => {
+  return msgs.filter(m => !m.author.bot && (m.type === 0 || m.type === 19) && m.content && !LINK_RE.test(m.content)).map(m => {
     const mem = byMember.get(m.author.id);
     let text = m.content
       .replace(/<@!?(\d+)>/g, (_, id) => '@' + (nameOf(id) || 'alguém'))
@@ -52,7 +54,7 @@ function muralFrom(msgs, byMember, chans) {
       level: mem ? levelOf(mem) : null,
       text, date: m.timestamp
     };
-  }).filter(Boolean);
+  }).filter(Boolean).slice(0, MURAL_MAX);
 }
 const levelOf = m => m.roles.map(id => LEVELS.get(id)).filter(Boolean).sort((a, b) => b.n - a.n)[0] || null;
 let GUILD_ID = ENV_GUILD_ID;          // fica guardado entre chamadas enquanto a função estiver "quente"
