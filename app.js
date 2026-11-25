@@ -359,6 +359,25 @@
     const n = String(p.name || '?'), first = (Array.from(n.trim())[0] || '?').toUpperCase();
     return `<div class="person"><span class="avatar sm" style="--h:${(n.length * 47 + 200) % 360}">${esc(first)}${p.avatar ? `<img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><b>${esc(n)}</b>${extra ? `<small>${esc(extra)}</small>` : ''}${badges(p)}</div>`;
   }
+  // ---------- mural (recados do canal do Discord) ----------
+  const rel = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' });
+  const ago = iso => {
+    const s = (new Date(iso) - Date.now()) / 1000;
+    if (!(s < -60)) return 'agora mesmo';   // relógio de quem visita adiantado/atrasado não vira "em X minutos"
+    for (const [u, n] of [['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400], ['hour', 3600], ['minute', 60]])
+      if (Math.abs(s) >= n) return rel.format(Math.round(s / n), u);
+    return 'agora mesmo';
+  };
+  function renderMural(m) {
+    const sec = $('#mural'); if (!sec) return;
+    $('#muralName').textContent = m.name || '🌐│mural-do-site';
+    $('#muralBtn').href = m.url || D.invite;
+    $('#muralList').innerHTML = m.messages.length ? m.messages.map(x => {
+      const n = String(x.name || '?'), first = (Array.from(n.trim())[0] || '?').toUpperCase();
+      return `<article class="note"><header><span class="avatar xs" style="--h:${(n.length * 53 + 260) % 360}">${esc(first)}${x.avatar ? `<img src="${esc(x.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><div><b>${esc(n)}</b><small>${esc(ago(x.date))}${x.level && x.level.n ? ` · ${esc(x.level.emoji || '⭐')} Nv. ${x.level.n}` : ''}</small></div></header><p>${esc(x.text)}</p></article>`;
+    }).join('') : '<div class="events-empty"><span class="ico">✨</span><div><b>O mural está esperando o primeiro recado!</b>Escreva no canal do Discord e ele aparece aqui.</div></div>';
+    sec.hidden = false;
+  }
   function renderBoostGoal(s) {
     const box = $('#boostGoal'), goal = +D.boostGoal || 0;
     if (!box || !s || !goal) return;
@@ -825,7 +844,7 @@
     const NAMES = [...new Set([...(D.hall || []).map(h => h.name), ...(D.past || []).map(e => e.winner)].filter(Boolean))];
     const API_URL = '/api/discord' + (NAMES.length ? '?names=' + encodeURIComponent(NAMES.join(',')) : '');
     const changed = (k, v) => { const s = JSON.stringify(v); if (s === k.v) return false; k.v = s; return true; };
-    const seen = { people: {}, srv: {}, map: {}, pl: {}, sup: {}, ev: {} };
+    const seen = { people: {}, srv: {}, map: {}, pl: {}, sup: {}, ev: {}, mural: {} };
     function apply(j) {
       if (Number.isFinite(j.members) && j.members > 0) {
         show(j.members);
@@ -839,6 +858,7 @@
       }
       if (j.people && changed(seen.people, j.people)) { renderHall(j.people); renderPast(j.people); }
       if (j.server && changed(seen.srv, j.server)) renderServer(j.server);
+      if (j.mural && changed(seen.mural, j.mural)) renderMural(j.mural);
       if (Array.isArray(j.eventRoles) && changed(seen.ev, j.eventRoles)) { EVENT_ROLES = j.eventRoles; renderPast(); }
       if (Array.isArray(j.map) && j.map.length && changed(seen.map, j.map)) setCats(j.map);
       if (Array.isArray(j.planets) && changed(seen.pl, j.planets)) {
