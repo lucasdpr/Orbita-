@@ -265,6 +265,16 @@
       return `<article class="card glow ev reveal in ${t && ms <= 0 && !e.live ? 'past' : ''} ${e.live ? 'live' : ''}">${e.image ? `<img class="ev-cover" src="${esc(e.image)}" alt="" loading="lazy">` : ''}<span class="tag">${esc(e.tag)}</span>${e.emoji ? `<div class="ev-ico">${esc(e.emoji)}</div>` : ''}<h3>${esc(e.title)}</h3><div class="date">${esc(t ? fmt.format(t) : (e.when || 'Em breve'))}</div>${e.location ? `<div class="ev-loc">📍 ${esc(e.location)}</div>` : ''}<p>${esc(short)}</p><div class="count">${e.live ? '🔴 Acontecendo agora' : t ? countdown(ms) : '⏳ Data a confirmar'}${extra}</div>${e.url ? `<a class="ev-link" href="${esc(e.url)}" target="_blank" rel="noopener">Ver no Discord →</a>` : ''}</article>`;
     }).join('') : '<div class="events-empty"><span class="ico">🔭</span><div><b>Nenhum evento agendado agora</b>Os próximos são anunciados no <code>#eventos</code> do Discord.</div></div>';
   }
+  // selo de nível: "⭐ Nv. 40" (o nome do cargo aparece ao passar o mouse)
+  const lvlBadge = l => l && l.n ? `<span class="lvl" title="${esc((l.name ? l.name + ' · ' : '') + 'nível ' + l.n)}">${esc(l.emoji || '⭐')} Nv. ${l.n}</span>` : '';
+  // dias no servidor: calculado no navegador a partir da data de entrada, então muda sozinho todo dia
+  const dayFmt = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const daysBadge = iso => {
+    if (!iso) return ''; const t = new Date(iso); if (isNaN(t)) return '';
+    const n = Math.max(0, Math.floor((Date.now() - t) / 864e5));
+    return `<span class="days" title="Entrou em ${esc(dayFmt.format(t))}">🛰️ ${n} dia${n === 1 ? '' : 's'}<span class="long"> na Órbita</span></span>`;
+  };
+  const badges = p => p && (p.level || p.joined) ? `<div class="lvl-row">${lvlBadge(p.level)}${daysBadge(p.joined)}</div>` : '';
   // acha a foto da pessoa sem ligar para maiúsculas/acentos ("Fim de festa" = "fim de festa")
   const personIn = (people, name) => { if (!name) return null; if (people[name]) return people[name]; const k = pkey(name); const hit = Object.keys(people).find(n => pkey(n) === k); return hit ? people[hit] : null; };
   function renderPast(people = {}) {
@@ -306,7 +316,7 @@
     $('#hallList').innerHTML = D.hall.map(h => {
       const p = personIn(people, h.name);
       const face = p ? `<div class="hall-av"><span class="hall-em">${esc(h.emoji)}</span><img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()"><span class="hall-badge">${esc(h.emoji)}</span></div>` : `<div class="em">${esc(h.emoji)}</div>`;
-      return `<div class="card glow">${face}<h3>${esc(h.name)}</h3><small>${esc(h.role)}</small></div>`;
+      return `<div class="card glow">${face}<h3>${esc(h.name)}</h3><small>${esc(h.role)}</small>${badges(p)}</div>`;
     }).join('');
   }
   renderHall();
@@ -334,10 +344,10 @@
     }
   }
   // ---------- apoiadores (boosters e VIPs) ----------
-  const cleanRole = r => String(r || '').replace(/^\s*【\s*(.*?)\s*】\s*/, '$1 ').trim();
+  const cleanRole = r => String(r || '').replace(/^\s*【\s*(.*?)\s*】\s*/, '$1 ').replace(/^[\s—–\-•·|┊]+|[\s—–\-•·|┊]+$/g, '').trim();
   function personCard(p, extra) {
     const n = String(p.name || '?'), first = (Array.from(n.trim())[0] || '?').toUpperCase();
-    return `<div class="person"><span class="avatar sm" style="--h:${(n.length * 47 + 200) % 360}">${esc(first)}${p.avatar ? `<img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><b>${esc(n)}</b>${extra ? `<small>${esc(extra)}</small>` : ''}</div>`;
+    return `<div class="person"><span class="avatar sm" style="--h:${(n.length * 47 + 200) % 360}">${esc(first)}${p.avatar ? `<img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><b>${esc(n)}</b>${extra ? `<small>${esc(extra)}</small>` : ''}${badges(p)}</div>`;
   }
   function renderSupporters(boosters, vips) {
     const sec = $('#apoiadores'); if (!sec) return;
@@ -351,7 +361,7 @@
       const o = typeof s === 'string' ? { name: s } : s, n = String(o.name || '?');
       const first = (Array.from(n.trim())[0] || '?').toUpperCase();             // Array.from: não quebra letras especiais/emoji
       const role = String(o.role || 'Staff').replace(/^\s*【\s*(.*?)\s*】\s*/, '$1 ').trim();   // "【☄️】Administração" -> "☄️ Administração"
-      return `<div class="card glow staff-card reveal${shown ? ' in' : ''}"><span class="avatar" style="--h:${(i * 67 + 250) % 360}">${esc(first)}${o.avatar ? `<img src="${esc(o.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><h3>${esc(n)}</h3><small>${esc(role)}</small></div>`;
+      return `<div class="card glow staff-card reveal${shown ? ' in' : ''}"><span class="avatar" style="--h:${(i * 67 + 250) % 360}">${esc(first)}${o.avatar ? `<img src="${esc(o.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><h3>${esc(n)}</h3><small>${esc(role)}</small>${badges(o)}</div>`;
     }).join('');
   }
   renderStaff(D.staff || []);

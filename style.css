@@ -487,3 +487,13 @@ img.lite-sun{position:absolute;inset:-100%;width:300%;height:300%;max-width:none
 .person b{font-size:.92rem;line-height:1.2;word-break:break-word}
 .person small{color:var(--muted);font-size:.74rem}
 .avatar.sm{width:56px;height:56px;font-size:1.3rem;margin:0}
+
+/* ---------- selo de nível ---------- */
+.lvl{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font:600 .72rem 'JetBrains Mono',monospace;letter-spacing:.02em;
+  color:#ffe9a8;background:rgba(255,210,79,.12);border:1px solid rgba(255,210,79,.35);white-space:nowrap}
+.lvl-row{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.days{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font:600 .72rem 'JetBrains Mono',monospace;
+  color:#bfeaff;background:rgba(79,216,255,.1);border:1px solid rgba(79,216,255,.3);white-space:nowrap}
+.person .lvl-row{margin-top:4px}
+.person .days .long{display:none}
+.person .lvl-row{flex-direction:column;align-items:center;gap:4px}

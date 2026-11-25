@@ -9,10 +9,28 @@ const ENV_STAFF_ROLE_IDS = (process.env.DISCORD_STAFF_ROLE_IDS || '').split(',')
 // categorias mostradas no "Mapa da Galáxia" (comparadas sem acento, emoji ou símbolo)
 const MAP_CATEGORIES = (process.env.DISCORD_MAP_CATEGORIES || 'interacao,comunicacao,joguinhos,musicas,premium').split(',').map(s => s.trim()).filter(Boolean);
 const STAFF_NAME = /staff|moder|admin|equipe|suporte|ajudante|helper|\bmods?\b/i;
-const VIP_NAME = /vip/i;   // cargos de VIP (ex.: "【👑】VIP")
+// cargos de VIP: qualquer nome com "VIP", em qualquer estilo de letra (ＶＩＰ, 𝐕𝐈𝐏, [VIP]...) — comparado já normalizado
+const isVipRole = r => /vip/.test(norm(r.name));
+const isStaffName = n => STAFF_NAME.test(n || '') || /staff|moder|admin|equipe|suporte|ajudante|helper/.test(norm(n));
 const API = 'https://discord.com/api/v10';
 const CDN = 'https://cdn.discordapp.com';
 const MEMBERS_CHANNEL = /membros?\s*[:：\-–]\s*([\d][\d.,\s]*)/i;   // ex.: "Membros: 1300" / "Membros: 1.300"
+// cargos de nível: "【⭐】Quartz Rosa: lvl 40" -> { n: 40, name: "Quartz Rosa", emoji: "⭐" } (só o mais alto de cada pessoa)
+const LEVEL_RE = /(?:lvl|level|nivel)(\d{1,3})/;
+let LEVELS = new Map();
+function levelInfo(roles) {
+  const m = new Map();
+  for (const r of roles) {
+    if (r.managed) continue;
+    const x = norm(r.name).match(LEVEL_RE); if (!x) continue;
+    const emoji = (String(r.name).match(/【\s*(.*?)\s*】/) || [])[1] || '';
+    const name = String(r.name).normalize('NFKC').replace(/【.*?】/g, '').replace(/[:：\-–|]?\s*(?:lvl|level|n[ií]vel)\.?\s*\d+/i, '')
+      .replace(/^[\s—–\-•·|┊]+|[\s—–\-•·|┊:]+$/g, '').trim();
+    m.set(r.id, { n: +x[1], name, emoji });
+  }
+  return m;
+}
+const levelOf = m => m.roles.map(id => LEVELS.get(id)).filter(Boolean).sort((a, b) => b.n - a.n)[0] || null;
 let GUILD_ID = ENV_GUILD_ID;          // fica guardado entre chamadas enquanto a função estiver "quente"
 
 async function dc(path, token) {
@@ -43,7 +61,7 @@ const displayName = m => m.nick || m.user.global_name || m.user.username;
 
 function staffRoles(roles) {
   if (ENV_STAFF_ROLE_IDS.length) return roles.filter(r => ENV_STAFF_ROLE_IDS.includes(r.id));
-  return roles.filter(r => !r.managed && r.id !== GUILD_ID && STAFF_NAME.test(r.name || ''));
+  return roles.filter(r => !r.managed && r.id !== GUILD_ID && isStaffName(r.name));
 }
 
 async function resolveGuild(token) {
@@ -66,14 +84,14 @@ async function allMembers(token) {
   return out.filter(m => !m.user.bot);
 }
 
-function vipRoles(roles) { return roles.filter(r => !r.managed && r.id !== GUILD_ID && VIP_NAME.test(r.name || '')); }
+function vipRoles(roles) { return roles.filter(r => !r.managed && r.id !== GUILD_ID && isVipRole(r)); }
 
 function staffFrom(members, roles, chosen = staffRoles(roles)) {
   if (!chosen.length) return [];
   const byId = new Map(roles.map(r => [r.id, r])), wanted = new Set(chosen.map(r => r.id));
   return members.map(m => {
     const mine = m.roles.filter(id => wanted.has(id)).map(id => byId.get(id)).filter(Boolean).sort((a, b) => b.position - a.position);
-    return mine.length ? { name: displayName(m), avatar: avatarOf(m, GUILD_ID), role: mine[0].name, _p: mine[0].position } : null;
+    return mine.length ? { name: displayName(m), avatar: avatarOf(m, GUILD_ID), role: mine[0].name, level: levelOf(m), joined: m.joined_at || null, _p: mine[0].position } : null;
   }).filter(Boolean).sort((a, b) => b._p - a._p || a.name.localeCompare(b.name, 'pt-BR')).map(({ _p, ...s }) => s);
 }
 
@@ -89,7 +107,7 @@ function findPerson(members, q) {
     }
     if (score === 3) break;
   }
-  return best ? { name: displayName(best), avatar: avatarOf(best, GUILD_ID) } : null;
+  return best ? { name: displayName(best), avatar: avatarOf(best, GUILD_ID), level: levelOf(best), joined: best.joined_at || null } : null;
 }
 
 function readNames(req) {
@@ -184,13 +202,14 @@ module.exports = async (req, res) => {
   if (roles.status === 'fulfilled') {
     out.staffRoles = staffRoles(roles.value).map(r => r.name);
     try {
+      LEVELS = levelInfo(roles.value);
       const members = await allMembers(token);
       out.staff = staffFrom(members, roles.value);
       const vr = vipRoles(roles.value);
       out.vipRoles = vr.map(r => r.name);
       out.vips = staffFrom(members, roles.value, vr).slice(0, 100);
       out.boosters = members.filter(m => m.premium_since).sort((a, b) => new Date(a.premium_since) - new Date(b.premium_since))
-        .slice(0, 60).map(m => ({ name: displayName(m), avatar: avatarOf(m, GUILD_ID), since: m.premium_since }));
+        .slice(0, 60).map(m => ({ name: displayName(m), avatar: avatarOf(m, GUILD_ID), since: m.premium_since, level: levelOf(m), joined: m.joined_at || null }));
       const names = readNames(req);
       if (names.length) { out.people = {}; for (const q of names) { const p = findPerson(members, q); if (p) out.people[q] = p; } }
     } catch (e) { out.problems.push(e.message + (e.status === 403 ? ' (ative o Server Members Intent no portal do bot)' : '')); }
