@@ -368,6 +368,16 @@
       if (Math.abs(s) >= n) return rel.format(Math.round(s / n), u);
     return 'agora mesmo';
   };
+  function renderBirthdays(b) {
+    const sec = $('#aniversarios'); if (!sec) return;
+    $('#bdMonth').textContent = b.monthName || '';
+    $('#bdBtn').href = b.url || D.invite;
+    $('#bdList').innerHTML = b.people.length ? b.people.map(p => {
+      const n = String(p.name || '?'), first = (Array.from(n.trim())[0] || '?').toUpperCase();
+      return `<article class="bd${p.today ? ' today' : ''}"><span class="avatar xs" style="--h:${(n.length * 53 + 260) % 360}">${esc(first)}${p.avatar ? `<img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><div><b>${esc(n)}</b><small>${p.today ? '🎉 É hoje!' : `dia ${p.day}`}${p.level && p.level.n ? ` · ${esc(p.level.emoji || '⭐')} Nv. ${p.level.n}` : ''}</small></div></article>`;
+    }).join('') : `<div class="events-empty"><span class="ico">🎈</span><div><b>Ninguém cadastrado em ${esc(b.monthName || 'este mês')} ainda.</b>Seja a primeira pessoa: clique no botão abaixo!</div></div>`;
+    sec.hidden = false;
+  }
   function renderMural(m) {
     const sec = $('#mural'); if (!sec) return;
     $('#muralName').textContent = m.name || '🌐│mural-do-site';
@@ -844,7 +854,7 @@
     const NAMES = [...new Set([...(D.hall || []).map(h => h.name), ...(D.past || []).map(e => e.winner)].filter(Boolean))];
     const API_URL = '/api/discord' + (NAMES.length ? '?names=' + encodeURIComponent(NAMES.join(',')) : '');
     const changed = (k, v) => { const s = JSON.stringify(v); if (s === k.v) return false; k.v = s; return true; };
-    const seen = { people: {}, srv: {}, map: {}, pl: {}, sup: {}, ev: {}, mural: {} };
+    const seen = { people: {}, srv: {}, map: {}, pl: {}, sup: {}, ev: {}, mural: {}, bd: {} };
     function apply(j) {
       if (Number.isFinite(j.members) && j.members > 0) {
         show(j.members);
@@ -859,6 +869,7 @@
       if (j.people && changed(seen.people, j.people)) { renderHall(j.people); renderPast(j.people); }
       if (j.server && changed(seen.srv, j.server)) renderServer(j.server);
       if (j.mural && changed(seen.mural, j.mural)) renderMural(j.mural);
+      if (j.birthdays && changed(seen.bd, j.birthdays)) renderBirthdays(j.birthdays);
       if (Array.isArray(j.eventRoles) && changed(seen.ev, j.eventRoles)) { EVENT_ROLES = j.eventRoles; renderPast(); }
       if (Array.isArray(j.map) && j.map.length && changed(seen.map, j.map)) setCats(j.map);
       if (Array.isArray(j.planets) && changed(seen.pl, j.planets)) {

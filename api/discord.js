@@ -4,6 +4,7 @@
 // Privacidade: só saem dados já públicos dentro do servidor (staff, boosters, nomes pedidos pelo site, canais das
 // categorias liberadas abaixo). Canais de outras categorias (staff, privados) nunca saem daqui.
 
+const BDAY = require('./_birthdays');
 const ENV_GUILD_ID = process.env.DISCORD_GUILD_ID || '';
 const ENV_STAFF_ROLE_IDS = (process.env.DISCORD_STAFF_ROLE_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
 // categorias mostradas no "Mapa da Galáxia" (comparadas sem acento, emoji ou símbolo)
@@ -192,6 +193,10 @@ module.exports = async (req, res) => {
   const muralCh = chans.find(c => (c.type === 0 || c.type === 5) && norm(c.name).includes('mural'));
   const muralP = muralCh ? dc(`/channels/${muralCh.id}/messages?limit=50`, token).catch(e => { out.problems.push(e.message + ' (mural)'); return []; }) : Promise.resolve(null);
   if (channels.status === 'rejected') out.problems.push(channels.reason.message);
+  // aniversários: registros do bot no canal escondido (só dia/mês)
+  const bdayCh = chans.find(BDAY.isBirthdayChannel), bdayRec = chans.find(BDAY.isRecordsChannel);
+  const bdayP = bdayCh && bdayRec ? Promise.all([dc('/users/@me', token), BDAY.readMessages(p => dc(p, token), bdayRec.id)])
+    .catch(e => { out.problems.push(e.message + ' (aniversários)'); return null; }) : Promise.resolve(null);
 
   // ---- membros: o número do canal "Membros: X" (igual ao servidor); senão, a contagem aproximada
   const statCh = chans.find(c => MEMBERS_CHANNEL.test(c.name || ''));
@@ -278,6 +283,20 @@ module.exports = async (req, res) => {
     out.mural = { name: muralCh.name, url: `https://discord.com/channels/${GUILD_ID}/${muralCh.id}`, messages: muralFrom(muralMsgs, byMember, chans) };
     const hidden = muralMsgs.filter(m => !m.author.bot && !m.content && !(m.attachments || []).length && !(m.embeds || []).length).length;
     if (hidden) out.problems.push('o texto das mensagens do mural veio vazio: ative a "Intenção de conteúdo da mensagem" no portal do bot');
+  }
+
+  // ---- aniversariantes do mês (horário de Brasília)
+  const bday = await bdayP;
+  if (bdayCh && bday) {
+    const [me, msgs] = bday, t = BDAY.todayBR();
+    const map = BDAY.recordsMap(msgs, me.id, byMember.size ? byMember : null);
+    out.birthdays = {
+      url: `https://discord.com/channels/${GUILD_ID}/${bdayCh.id}`, month: t.m, monthName: BDAY.MONTH_NAMES[t.m - 1], total: map.size,
+      people: [...map].filter(([, b]) => b.m === t.m || (BDAY.isToday(b, t))).map(([id, b]) => {
+        const m = byMember.get(id);
+        return m ? { name: displayName(m), avatar: avatarOf(m, GUILD_ID), level: levelOf(m), day: b.d, today: BDAY.isToday(b, t) } : null;
+      }).filter(Boolean).sort((a, b) => a.day - b.day)
+    };
   }
 
   // navegador não guarda (max-age=0); a CDN guarda 60 s. Com problema, guarda só 10 s para a correção aparecer logo.

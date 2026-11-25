@@ -522,3 +522,11 @@ img.lite-sun{position:absolute;inset:-100%;width:300%;height:300%;max-width:none
 .mural-join:hover{text-decoration:underline}
 .note header b,.note p{color:var(--text)}
 .note{opacity:1}
+
+/* ---------- aniversariantes ---------- */
+.bd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:22px}
+.bd{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;background:var(--surface);border:1px solid var(--line);animation:fadein .4s var(--ease)}
+.bd b{display:block;font-size:.92rem;line-height:1.2;word-break:break-word}
+.bd small{color:var(--muted);font-size:.76rem}
+.bd.today{border-color:#ff7ae0;box-shadow:0 0 0 1px #ff7ae0,0 0 24px rgba(255,79,216,.35)}
+.bd.today small{color:#ffd1f4;font-weight:700}
