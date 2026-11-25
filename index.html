@@ -186,7 +186,9 @@
     <p class="kicker">01 · A comunidade</p>
     <h2>Por que a <span class="grad">Órbita</span>?</h2>
     <p class="sub">Aqui ninguém precisa caber em padrão nenhum: a nossa órbita é feita de trajetórias diferentes, cores vibrantes e muito acolhimento. Se você procurava um lugar seguro para fincar sua bandeira e ser quem é de verdade, aterrissou no lugar certo.</p>
+    <div class="srv" id="srv" hidden></div>
     <div class="features"><div class="card feat"><span>🛡️</span><h3>Equipe ativa</h3><p>Staff sempre presente.</p></div><div class="card feat"><span>💬</span><h3>Bate-papo</h3><p>Canais para interação.</p></div><div class="card feat"><span>🔊</span><h3>Calls dinâmicas</h3><p>Salas variadas de voz.</p></div><div class="card feat"><span>⭐</span><h3>Níveis</h3><p>Sistema de progressão.</p></div><div class="card feat"><span>🎧</span><h3>Música e lofi</h3><p>Bots e ambientes relax.</p></div><div class="card feat"><span>🧶</span><h3>Cargos e cores</h3><p>Exclusivos e personalizados.</p></div><div class="card feat"><span>🌺</span><h3>Acolhedor</h3><p>Ambiente para LGBTQIAPN+.</p></div><div class="card feat"><span>💎</span><h3>Boost</h3><p>Benefícios para boosters.</p></div><div class="card feat"><span>💵</span><h3>VIP</h3><p>Cargos e benefícios.</p></div><div class="card feat"><span>🔞</span><h3>Sem NSFW</h3><p>Nenhum conteúdo adulto.</p></div><div class="card feat"><span>🎫</span><h3>Tickets</h3><p>Suporte disponível.</p></div><div class="card feat"><span>📅</span><h3>Eventos</h3><p>Cargos exclusivos.</p></div><div class="card feat"><span>⚜️</span><h3>Tag do servidor</h3><p>Mostre que é da Órbita.</p></div><div class="card feat"><span>💹</span><h3>Membros ativos</h3><p>Comunidade engajada.</p></div><div class="card feat"><span>📷</span><h3>Insta</h3><p>Vários canais de fotos.</p></div></div>
+    <div class="emoji-wall" id="emojiWall" hidden></div>
   </section>
 
   <!-- SISTEMA SOLAR -->
@@ -209,7 +211,7 @@
         <ol class="planet-list" id="planetList"></ol>
       </aside>
     </div>
-    <div class="moons">
+    <div class="moons" id="moons">
       <span>🌑 lua nova</span><span>🌒 lua minguante</span><span>🌓 lua crescente</span><span>🌕 lua cheia</span>
       <em>Salas menores (até 2 pessoas) para papo reservado. Cada planeta comporta até 10.</em>
     </div>
@@ -297,6 +299,15 @@
     <h2>A <span class="grad">Staff</span></h2>
     <p class="sub">Quem cuida da Órbita para ela continuar segura, organizada e acolhedora.</p>
     <div class="staff-grid" id="staffList"></div>
+  </section>
+
+  <!-- APOIADORES (preenchido pelo Discord) -->
+  <section id="apoiadores" class="sec" hidden>
+    <p class="kicker">08 · Apoiadores</p>
+    <h2>Quem faz a <span class="grad">Órbita</span> brilhar</h2>
+    <p class="sub">Quem impulsiona o servidor e quem é VIP. Obrigado por manterem a nossa galáxia acesa! 💜</p>
+    <div id="boostWrap" hidden><h3 class="past-title">💎 Impulsionam o servidor</h3><div class="people-wall" id="boosters"></div></div>
+    <div id="vipWrap" hidden><h3 class="past-title">👑 VIPs</h3><div class="people-wall" id="vips"></div></div>
   </section>
 
   <!-- CTA FINAL -->
