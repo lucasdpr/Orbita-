@@ -364,7 +364,7 @@
     $('#bdBtn').href = b.url || D.invite;
     $('#bdList').innerHTML = b.people.length ? b.people.map(p => {
       const n = String(p.name || '?'), first = (Array.from(n.trim())[0] || '?').toUpperCase();
-      return `<article class="bd${p.today ? ' today' : ''}"><span class="avatar xs" style="--h:${(n.length * 53 + 260) % 360}">${esc(first)}${p.avatar ? `<img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><div><b>${esc(n)}</b><small>${p.today ? '🎉 Hoje é o aniversário! Dá parabéns no bate-papo 💜' : `${p.day} de ${esc(p.monthName || '')} · ${p.days === 1 ? 'amanhã' : `em ${p.days} dias`}`}${p.level && p.level.n ? ` · ${esc(p.level.emoji || '⭐')} Nv. ${p.level.n}` : ''}</small></div>${p.today ? '<span class="cake" aria-hidden="true">🎂</span>' : ''}</article>`;
+      return `<article class="bd${p.today ? ' today' : ''}"><span class="avatar xs" style="--h:${(n.length * 53 + 260) % 360}">${esc(first)}${p.avatar ? `<img src="${esc(p.avatar)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span><div><b>${esc(n)}</b><small>${p.today ? '🎉 Hoje é o aniversário! Dá parabéns no bate-papo 💜' : `${p.day} de ${esc(p.monthName || '')} · ${p.days === 1 ? 'amanhã' : `em ${p.days} dias`}`}</small></div>${p.today ? '<span class="cake" aria-hidden="true">🎂</span>' : ''}</article>`;
     }).join('') : `<div class="events-empty"><span class="ico">🎈</span><div><b>Ninguém cadastrou o aniversário ainda.</b>Seja a primeira pessoa: clique no botão abaixo!</div></div>`;
     sec.hidden = false;
   }
