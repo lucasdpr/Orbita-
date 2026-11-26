@@ -531,3 +531,20 @@ img.lite-sun{position:absolute;inset:-100%;width:300%;height:300%;max-width:none
 .bd .avatar{width:48px;height:48px;min-width:48px;aspect-ratio:1;flex:0 0 auto;margin:0;font-size:1.1rem}
 .bd.today .avatar{width:84px;height:84px;min-width:84px;font-size:1.8rem}
 @media (max-width:560px){.bd.today .avatar{width:60px;height:60px;min-width:60px}}
+
+/* cartões de aniversário: selo de calendário */
+.bd-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.bd{gap:14px;padding:16px 18px;border-radius:20px;background:linear-gradient(160deg,rgba(184,107,255,.10),rgba(107,214,255,.05)),var(--surface);transition:transform .25s var(--ease),border-color .25s}
+.bd:hover{transform:translateY(-3px);border-color:rgba(255,122,224,.5)}
+.bd-date{flex:none;width:58px;border-radius:14px;overflow:hidden;text-align:center;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.bd-date span{display:block;padding:3px 0;font:700 .7rem 'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:#1a0f2e;background:linear-gradient(90deg,#ff7ae0,#b86bff)}
+.bd-date b{display:block;padding:6px 0 7px;font-size:1.45rem;line-height:1;color:var(--text)}
+.bd-info{min-width:0}
+.bd-info b{display:block;font-size:1rem;line-height:1.25;word-break:break-word}
+.bd-when{display:inline-block;margin-top:5px;padding:3px 10px;border-radius:999px;font-size:.78rem;font-weight:600;color:#d9ccff;background:rgba(184,107,255,.18);border:1px solid rgba(184,107,255,.35)}
+.bd.today .bd-date{width:76px}
+.bd.today .bd-date b{font-size:2rem;padding:8px 0 10px}
+.bd.today .bd-info b{font-size:1.6rem}
+.bd.today .bd-when{font-size:.95rem;color:#2a0f2a;background:linear-gradient(90deg,#ffd1f4,#ff7ae0);border-color:transparent}
+.bd.today small{display:block;margin-top:6px;color:#ffd1f4;font-size:.9rem;font-weight:600}
+@media (max-width:560px){.bd.today{flex-wrap:wrap}.bd.today .bd-info b{font-size:1.25rem}.bd.today .bd-date{width:62px}}

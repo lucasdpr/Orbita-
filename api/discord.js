@@ -258,7 +258,7 @@ module.exports = async (req, res) => {
       url: `https://discord.com/channels/${GUILD_ID}/${bdayCh.id}`, total: map.size,
       people: [...map].map(([id, b]) => ({ id, b, days: BDAY.daysUntil(b, t) })).sort((x, y) => x.days - y.days).map(({ id, b, days }) => {
         const m = byMember.get(id);
-        return m ? { name: displayName(m), avatar: avatarOf(m, GUILD_ID), level: levelOf(m), day: b.d, monthName: BDAY.MONTH_NAMES[b.m - 1], days, today: days === 0 } : null;
+        return m ? { name: displayName(m), avatar: avatarOf(m, GUILD_ID), day: b.d, monthName: BDAY.MONTH_NAMES[b.m - 1], days, today: days === 0 } : null;
       }).filter(Boolean).slice(0, 3)
     };
   }
