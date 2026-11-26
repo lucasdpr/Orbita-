@@ -293,6 +293,17 @@
     }).join('');
   }
   renderPast();
+
+  // ---------- calendário anual ----------
+  (function renderCalendar() {
+    const box = $('#calGrid'); if (!box || !Array.isArray(D.calendar)) return;
+    const names = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const now = +new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', month: 'numeric' }).format(new Date()) - 1;
+    box.innerHTML = names.map((n, i) => {
+      const evs = D.calendar[i] || [];
+      return `<article class="cal-m${i === now ? ' now' : ''}"><header><b>${n}</b>${i === now ? '<span>Este mês</span>' : ''}</header>${evs.length ? `<ul>${evs.map(([e, t]) => `<li><i aria-hidden="true">${esc(e)}</i>${esc(t)}</li>`).join('')}</ul>` : '<p class="cal-tbd">✨ a definir</p>'}</article>`;
+    }).join('');
+  })();
   fBox.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; renderEvents(); } });
   renderEvents(); setInterval(renderEvents, 60000);
 

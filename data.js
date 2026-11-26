@@ -24,6 +24,22 @@ window.ORBITA = {
 
   // Eventos que já aconteceram. "winner" (opcional) destaca quem ganhou. "sort" (AAAA-MM-DD) define a ordem; "when" é o texto mostrado.
   // Sem "sort" o evento vai para o fim da lista, marcado como "data a confirmar".
+  // Calendário anual (seção "Calendário da Órbita" do site). Cada mês: lista de [emoji, nome]. Mês vazio aparece como "a definir".
+  calendar: [
+    [["🐲", "Ano Novo Chinês"]],
+    [["🎭", "Carnaval"]],
+    [["☘️", "St. Patrick's Day"]],
+    [["🐰", "Páscoa"]],
+    [["🌼", "Camélias da Abolição"]],
+    [["💞", "Dia dos Namorados"], ["🏳️‍🌈", "Mês do Orgulho"]],
+    [["🎂", "Aniversário da Órbita"]],
+    [["🎨", "Concurso de Desenho"]],
+    [["🇧🇷", "Independência do Brasil"], ["💛", "Setembro Amarelo"]],
+    [["👻", "Halloween"], ["🌸", "Outubro Rosa"]],
+    [],
+    [["🎅", "Natal"], ["🎱", "Bingo"], ["👑", "Miss Órbita"], ["🎆", "Ano Novo"]]
+  ],
+
   past: [
     { title: "Copa do Mundo", winner: "Fim de festa", emoji: "⚽", tag: "Esportes", sort: "2026-06-11", when: "Jun/2026", desc: "Evento da Copa do Mundo com a comunidade." },
     { title: "Dia dos Namorados", emoji: "💘", tag: "Temático", sort: "2026-06-12", when: "Jun/2026", desc: "Evento de Dia dos Namorados no servidor." },
