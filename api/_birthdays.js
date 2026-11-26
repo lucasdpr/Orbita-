@@ -65,4 +65,15 @@ const isLeap = y => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
 // quem faz 29/02 comemora em 28/02 nos anos que não são bissextos
 const isToday = (b, t) => (b.d === t.d && b.m === t.m) || (b.d === 29 && b.m === 2 && t.d === 28 && t.m === 2 && !isLeap(t.y));
 
-module.exports = { parseBirthday, readMessages, recordsMap, recordText, todayBR, isToday, isBirthdayChannel, isRecordsChannel, chanKey, MONTH_NAMES, TZ };
+// quantos dias faltam (0 = hoje) até o próximo aniversário, no horário de Brasília
+function daysUntil(b, t) {
+  const today = Date.UTC(t.y, t.m - 1, t.d);
+  for (const y of [t.y, t.y + 1]) {
+    const d = (b.d === 29 && b.m === 2 && !isLeap(y)) ? 28 : b.d;
+    const when = Date.UTC(y, b.m - 1, d);
+    if (when >= today) return Math.round((when - today) / 86400000);
+  }
+  return 365;
+}
+
+module.exports = { daysUntil, parseBirthday, readMessages, recordsMap, recordText, todayBR, isToday, isBirthdayChannel, isRecordsChannel, chanKey, MONTH_NAMES, TZ };
