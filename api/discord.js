@@ -285,17 +285,17 @@ module.exports = async (req, res) => {
     if (hidden) out.problems.push('o texto das mensagens do mural veio vazio: ative a "Intenção de conteúdo da mensagem" no portal do bot');
   }
 
-  // ---- aniversariantes do mês (horário de Brasília)
+  // ---- próximos 3 aniversários (horário de Brasília)
   const bday = await bdayP;
   if (bdayCh && bday) {
     const [me, msgs] = bday, t = BDAY.todayBR();
     const map = BDAY.recordsMap(msgs, me.id, byMember.size ? byMember : null);
     out.birthdays = {
-      url: `https://discord.com/channels/${GUILD_ID}/${bdayCh.id}`, month: t.m, monthName: BDAY.MONTH_NAMES[t.m - 1], total: map.size,
-      people: [...map].filter(([, b]) => b.m === t.m || (BDAY.isToday(b, t))).map(([id, b]) => {
+      url: `https://discord.com/channels/${GUILD_ID}/${bdayCh.id}`, total: map.size,
+      people: [...map].map(([id, b]) => ({ id, b, days: BDAY.daysUntil(b, t) })).sort((x, y) => x.days - y.days).map(({ id, b, days }) => {
         const m = byMember.get(id);
-        return m ? { name: displayName(m), avatar: avatarOf(m, GUILD_ID), level: levelOf(m), day: b.d, today: BDAY.isToday(b, t) } : null;
-      }).filter(Boolean).sort((a, b) => a.day - b.day)
+        return m ? { name: displayName(m), avatar: avatarOf(m, GUILD_ID), level: levelOf(m), day: b.d, monthName: BDAY.MONTH_NAMES[b.m - 1], days, today: days === 0 } : null;
+      }).filter(Boolean).slice(0, 3)
     };
   }
 
