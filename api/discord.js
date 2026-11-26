@@ -31,32 +31,6 @@ function levelInfo(roles) {
   }
   return m;
 }
-// mural: mensagens do canal "mural" viram recados no site (só texto, sem links, sem bots)
-// quantos recados aparecem no site (os mais recentes)
-const MURAL_MAX = 10;
-const LINK_RE = /(https?:\/\/|www\.|discord\.gg|\.com\b|\.gg\b|\.br\b)/i;
-function muralFrom(msgs, byMember, chans) {
-  const nameOf = id => { const m = byMember.get(id); return m ? displayName(m) : null; };
-  return msgs.filter(m => !m.author.bot && (m.type === 0 || m.type === 19) && m.content && !LINK_RE.test(m.content)).map(m => {
-    const mem = byMember.get(m.author.id);
-    let text = m.content
-      .replace(/<@!?(\d+)>/g, (_, id) => '@' + (nameOf(id) || 'alguém'))
-      .replace(/<@&\d+>/g, '@cargo')
-      .replace(/<#(\d+)>/g, (_, id) => { const c = chans.find(x => x.id === id); return '#' + (c ? pretty(c.name).toLowerCase() : 'canal'); })
-      .replace(/<a?:(\w+):\d+>/g, ':$1:')
-      .replace(/\|\|[\s\S]*?\|\|/g, '[spoiler]')
-      .replace(/(\*\*|__|~~|`{1,3})/g, '')
-      .trim();
-    if (!text) return null;
-    if (text.length > 280) text = text.slice(0, 277) + '…';
-    return {
-      name: mem ? displayName(mem) : (m.author.global_name || m.author.username),
-      avatar: avatarOf(mem || { user: m.author }, GUILD_ID),
-      level: mem ? levelOf(mem) : null,
-      text, date: m.timestamp
-    };
-  }).filter(Boolean).slice(0, MURAL_MAX);
-}
 const levelOf = m => m.roles.map(id => LEVELS.get(id)).filter(Boolean).sort((a, b) => b.n - a.n)[0] || null;
 let GUILD_ID = ENV_GUILD_ID;          // fica guardado entre chamadas enquanto a função estiver "quente"
 
@@ -190,8 +164,6 @@ module.exports = async (req, res) => {
   const g = guild.value;
   const out = { ok: true, updatedAt: new Date().toISOString(), name: g.name, problems: [] };
   const chans = channels.status === 'fulfilled' ? channels.value : [];
-  const muralCh = chans.find(c => (c.type === 0 || c.type === 5) && norm(c.name).includes('mural'));
-  const muralP = muralCh ? dc(`/channels/${muralCh.id}/messages?limit=50`, token).catch(e => { out.problems.push(e.message + ' (mural)'); return []; }) : Promise.resolve(null);
   if (channels.status === 'rejected') out.problems.push(channels.reason.message);
   // aniversários: registros do bot no canal escondido (só dia/mês)
   const bdayCh = chans.find(BDAY.isBirthdayChannel), bdayRec = chans.find(BDAY.isRecordsChannel);
@@ -276,14 +248,6 @@ module.exports = async (req, res) => {
       if (names.length) { out.people = {}; for (const q of names) { const p = findPerson(members, q); if (p) out.people[q] = p; } }
     } catch (e) { out.problems.push(e.message + (e.status === 403 ? ' (ative o Server Members Intent no portal do bot)' : '')); }
   } else out.problems.push(roles.reason.message);
-
-  // ---- mural
-  const muralMsgs = await muralP;
-  if (muralCh && Array.isArray(muralMsgs)) {
-    out.mural = { name: muralCh.name, url: `https://discord.com/channels/${GUILD_ID}/${muralCh.id}`, messages: muralFrom(muralMsgs, byMember, chans) };
-    const hidden = muralMsgs.filter(m => !m.author.bot && !m.content && !(m.attachments || []).length && !(m.embeds || []).length).length;
-    if (hidden) out.problems.push('o texto das mensagens do mural veio vazio: ative a "Intenção de conteúdo da mensagem" no portal do bot');
-  }
 
   // ---- próximos 3 aniversários (horário de Brasília)
   const bday = await bdayP;

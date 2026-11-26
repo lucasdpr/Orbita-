@@ -17,7 +17,9 @@ window.ORBITA = {
   // Próximos eventos. date: AAAA-MM-DDTHH:MM (horário de Brasília). Deixe [] se não houver nenhum agendado.
   // Sem "date" o card mostra "Data a confirmar". Quando souber, use date: "AAAA-MM-DDTHH:MM" para ligar a contagem regressiva.
   events: [
-    { title: "Minecraft", emoji: "⛏️", tag: "Jogos", desc: "O próximo evento da Órbita vai ser de Minecraft de novo! Data a confirmar no #eventos." }
+    { title: "Natal da Órbita", emoji: "🎄", tag: "Temático", desc: "Dezembro: o Natal da Órbita! Data e detalhes no #eventos." },
+    { title: "Bingo", emoji: "🎱", tag: "Jogos", desc: "Dezembro: bingo na call com a galera. Data no #eventos." },
+    { title: "Tower Parkour", emoji: "🧗", tag: "Jogos", desc: "Janeiro: desafio de Tower Parkour! Data no #eventos." }
   ],
 
   // Eventos que já aconteceram. "winner" (opcional) destaca quem ganhou. "sort" (AAAA-MM-DD) define a ordem; "when" é o texto mostrado.

@@ -509,17 +509,7 @@ img.lite-sun{position:absolute;inset:-100%;width:300%;height:300%;max-width:none
 .boost-goal p{color:var(--muted);margin:14px 0 16px}
 .boost-goal p b{color:var(--text)}
 
-/* ---------- mural ---------- */
-.mural-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:22px}
-.note{position:relative;padding:16px 18px;border-radius:18px 18px 18px 6px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);animation:fadein .4s var(--ease)}
-.note header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.note header b{display:block;font-size:.92rem;line-height:1.2;word-break:break-word}
-.note header small{color:var(--muted);font-size:.74rem}
-.note p{white-space:pre-wrap;word-break:break-word;font-size:.95rem;line-height:1.5}
-.avatar.xs{width:38px;height:38px;font-size:.95rem;margin:0;flex:none}
 .mural-cta{display:flex;flex-wrap:wrap;align-items:center;gap:16px}
-.mural-join{color:var(--cyan);font-weight:600;font-size:.9rem}
-.mural-join:hover{text-decoration:underline}
 .note header b,.note p{color:var(--text)}
 .note{opacity:1}
 
@@ -530,3 +520,14 @@ img.lite-sun{position:absolute;inset:-100%;width:300%;height:300%;max-width:none
 .bd small{color:var(--muted);font-size:.76rem}
 .bd.today{border-color:#ff7ae0;box-shadow:0 0 0 1px #ff7ae0,0 0 24px rgba(255,79,216,.35)}
 .bd.today small{color:#ffd1f4;font-weight:700}
+.bd.today{grid-column:1/-1;gap:18px;padding:22px 26px;border-radius:22px;background:linear-gradient(135deg,rgba(255,122,224,.18),rgba(107,214,255,.12)),var(--surface)}
+.bd.today .avatar.xs{width:76px;height:76px;font-size:1.6rem}
+.bd.today b{font-size:1.5rem}
+.bd.today small{font-size:.95rem}
+.bd .cake{margin-left:auto;font-size:4.2rem;line-height:1;filter:drop-shadow(0 0 18px rgba(255,79,216,.55));animation:cake 2.4s ease-in-out infinite}
+@keyframes cake{50%{transform:translateY(-6px) rotate(-4deg)}}
+@media (prefers-reduced-motion:reduce){.bd .cake{animation:none}}
+@media (max-width:560px){.bd.today .avatar.xs{width:58px;height:58px}.bd.today b{font-size:1.2rem}.bd .cake{font-size:3rem}}
+.bd .avatar{width:48px;height:48px;min-width:48px;aspect-ratio:1;flex:0 0 auto;margin:0;font-size:1.1rem}
+.bd.today .avatar{width:84px;height:84px;min-width:84px;font-size:1.8rem}
+@media (max-width:560px){.bd.today .avatar{width:60px;height:60px;min-width:60px}}
